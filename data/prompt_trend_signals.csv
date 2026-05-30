@@ -1,0 +1,51 @@
+year,style,tool,keyword,intent,prompt_count,source
+2020,Cyberpunk,Midjourney,neon reflection,Light,560,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,Cyberpunk,Midjourney,cinematic lighting,Atmosphere,650,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,Cyberpunk,Midjourney,neon rain,Atmosphere,720,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,Cyberpunk,Midjourney,holographic interface,Interface,780,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,Cyberpunk,Midjourney,reflective pavement,Atmosphere,820,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,Anime,Stable Diffusion,anime key visual,Character,520,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,Anime,Stable Diffusion,expressive lighting,Character,620,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,Anime,Stable Diffusion,dynamic composition,Character,760,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,Anime,Stable Diffusion,emotional color palette,Character,840,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,Anime,Stable Diffusion,cinematic anime poster,Character,950,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,3D Render,DALL-E,isometric 3D,Product,260,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,3D Render,DALL-E,glass material,Product,390,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,3D Render,DALL-E,studio lighting,Product,540,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,3D Render,DALL-E,product render,Product,650,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,3D Render,DALL-E,softbox lighting,Product,760,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,Retro Futurism,Midjourney,analog interface,Interface,120,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,Retro Futurism,Midjourney,chrome texture,Material,230,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,Retro Futurism,Midjourney,retro sci-fi interior,Atmosphere,350,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,Retro Futurism,Midjourney,vintage futurism,Atmosphere,480,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,Retro Futurism,Midjourney,optimistic future,Story,560,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,Minimalism,Adobe Firefly,negative space,Brand,330,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,Minimalism,Adobe Firefly,clean layout,Brand,360,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,Minimalism,Adobe Firefly,soft gradient,Brand,390,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,Minimalism,Adobe Firefly,editorial typography,Brand,430,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,Minimalism,Adobe Firefly,brand system,Brand,470,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,Dark Fantasy,Stable Diffusion,mystical lighting,Story,100,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,Dark Fantasy,Stable Diffusion,gothic environment,Story,180,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,Dark Fantasy,Stable Diffusion,ancient forest,Story,260,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,Dark Fantasy,Stable Diffusion,dramatic shadow,Story,340,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,Dark Fantasy,Stable Diffusion,cinematic fog,Story,420,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,Documentary Realism,Runway,documentary photo,Realism,50,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,Documentary Realism,Runway,natural light,Realism,80,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,Documentary Realism,Runway,film grain,Texture,110,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,Documentary Realism,Runway,field report,Realism,150,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,Documentary Realism,Runway,believable scene,Realism,190,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,Surreal Editorial,Midjourney,dreamlike editorial,Editorial,210,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,Surreal Editorial,Midjourney,impossible architecture,Editorial,290,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,Surreal Editorial,Midjourney,surreal magazine,Editorial,410,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,Surreal Editorial,Midjourney,floating fabric,Editorial,540,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,Surreal Editorial,Midjourney,dream photography,Editorial,690,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,Luxury Fashion,Adobe Firefly,luxury campaign,Brand,170,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,Luxury Fashion,Adobe Firefly,premium styling,Brand,260,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,Luxury Fashion,Adobe Firefly,editorial fashion,Brand,420,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,Luxury Fashion,Adobe Firefly,glossy reflections,Brand,610,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,Luxury Fashion,Adobe Firefly,brand campaign,Brand,790,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2020,AI Cinematic Storyboard,Runway,film still,Video,140,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2021,AI Cinematic Storyboard,Runway,cinematic frame,Video,230,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2022,AI Cinematic Storyboard,Runway,storyboard shot,Video,390,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2023,AI Cinematic Storyboard,Runway,volumetric light,Video,620,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags
+2024,AI Cinematic Storyboard,Runway,ai video still,Video,860,Semi-real aggregate inspired by public Stable Diffusion prompt datasets and AI gallery tags

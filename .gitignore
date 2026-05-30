@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+.streamlit/secrets.toml
+streamlit_*.log
+dashboard_*.log
+dashboard_*.err.log
+com.hada.ai-visual-dashboard*.plist
+keep_dashboard_alive.sh
+start_dashboard.sh
