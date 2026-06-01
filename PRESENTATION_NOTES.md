@@ -13,24 +13,24 @@ AI Visual Trend Dashboard is a Data Hub Dashboard about AI-generated visual cult
 
 ## 3. Data Story
 
-The dashboard uses a structured semi-real prompt dataset with 22,050 prompt signals. The data is grouped by year, style, tool, keyword, and intent. The pipeline is designed so the CSV can be replaced by a Kaggle Stable Diffusion prompt export.
+The dashboard derives its statistics from the official DiffusionDB 2M metadata table. It begins with 2,000,000 rows and keeps 981,354 prompt records after requiring a valid timestamp, `image_nsfw < 0.1`, and `prompt_nsfw < 0.1`. Transparent keyword rules classify 263,472 prompts into 10 tracked visual styles. The website reports daily UTC trends for the real 2022-08-06 to 2022-08-20 source window.
 
 ## 4. Key Insight
 
-Anime leads the 2024 sample volume, while Cyberpunk remains strong through cinematic lighting and atmosphere keywords. AI Cinematic Storyboard and Documentary Realism are emerging, suggesting a shift from static aesthetics toward narrative, video-oriented, and believable image-making.
+Use the live hero metrics during the presentation. They dynamically identify the leading tracked style, runner-up style, and largest observed first-to-last-day change from real DiffusionDB prompt matches.
 
 ## 5. Main Features To Demo
 
-1. Show top metrics and the 22,050 prompt count.
+1. Show top metrics and the 981,354 safety-filtered DiffusionDB prompt count.
 2. Explain the AI Toolchain Snapshot: ideation, customization, commercial design, and motion/video.
-3. Use sidebar filters to select style, year, and tool.
+3. Use sidebar filters to select style, UTC date, and tool.
 4. Click a chart point for drill-down keywords and representative images.
 5. Open Representative Works and explain visual evidence.
-6. Open Tool Benchmarks to show selected tool highlighting.
+6. Open Tool Benchmarks to show the factual capability matrix and official source link.
 7. Open Creative Strategy and show Use Case Recommendation.
 8. Show Motion Preview and explain why motion is used only for cinematic/editorial/brand use cases.
 9. Open Real References and explain how official tool references support the dashboard categories.
-10. Show 2025-2027 exploratory forecast.
+10. Show the next-7-days exploratory forecast and explain its short-window limitation.
 
 ## 6. Technical Stack
 
@@ -44,7 +44,7 @@ Anime leads the 2024 sample volume, while Cyberpunk remains strong through cinem
 
 ## 7. Honest Limitation
 
-The current dataset is semi-real and structured for demonstration. The strongest final improvement would be replacing `data/prompt_trend_signals.csv` with a real Kaggle prompt export while keeping the same schema.
+DiffusionDB is real, but its 2M metadata table covers a short August 2022 collection window. The tracked-style taxonomy is a transparent keyword-rule lens rather than a universal classification of every prompt. Local gallery images are illustrative concept assets, not records copied from DiffusionDB.
 
 ## 8. Final One-Sentence Pitch
 

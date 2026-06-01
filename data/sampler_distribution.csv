@@ -1,0 +1,10 @@
+sampler,prompt_count,share_percent
+k_lms,966182,98.45
+k_euler_ancestral,6482,0.66
+k_euler,3733,0.38
+ddim,1614,0.16
+k_dpm_2_ancestral,1333,0.14
+k_heun,750,0.08
+k_dpm_2,689,0.07
+plms,458,0.05
+others,113,0.01

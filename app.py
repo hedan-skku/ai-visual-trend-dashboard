@@ -222,24 +222,32 @@ def load_data():
         tool_path = DATA_DIR / "tool_benchmarks.csv"
         works_path = DATA_DIR / "representative_works.csv"
         references_path = DATA_DIR / "real_world_references.csv"
+        summary_path = DATA_DIR / "dataset_summary.csv"
+        sampler_path = DATA_DIR / "sampler_distribution.csv"
+        aspect_path = DATA_DIR / "aspect_ratio_distribution.csv"
+        examples_path = DATA_DIR / "prompt_examples.csv"
 
         prompts = pd.read_csv(prompt_path)
         tools = pd.read_csv(tool_path)
         works = pd.read_csv(works_path)
         references = pd.read_csv(references_path)
+        summary = pd.read_csv(summary_path)
+        samplers = pd.read_csv(sampler_path)
+        aspect_ratios = pd.read_csv(aspect_path)
+        examples = pd.read_csv(examples_path)
     except FileNotFoundError as exc:
         friendly_error(
-            f"Data file missing: {exc.filename}. Please check the data folder or replace it with your Kaggle export."
+            f"Data file missing: {exc.filename}. Run scripts/build_real_data.py with the official DiffusionDB metadata table."
         )
     except Exception as exc:
         friendly_error(f"Data loading failed: {exc}")
 
-    required_prompt_cols = {"year", "style", "tool", "keyword", "intent", "prompt_count", "source"}
+    required_prompt_cols = {"period", "style", "tool", "keyword", "intent", "prompt_count", "source"}
     if not required_prompt_cols.issubset(prompts.columns):
         missing = ", ".join(sorted(required_prompt_cols - set(prompts.columns)))
         friendly_error(f"Prompt CSV is missing required columns: {missing}")
 
-    prompts["year"] = prompts["year"].astype(int)
+    prompts["period"] = pd.to_datetime(prompts["period"])
     prompts["prompt_count"] = prompts["prompt_count"].astype(int)
 
     if "visual_evidence" not in works.columns:
@@ -247,9 +255,9 @@ def load_data():
             "Composition, lighting, color palette, and use-case signals connect this image to the selected trend."
         )
 
-    style_year = prompts.groupby(["year", "style"], as_index=False)["prompt_count"].sum()
-    max_count = style_year["prompt_count"].max()
-    style_year["popularity"] = (style_year["prompt_count"] / max_count * 100).round(1)
+    style_period = prompts.groupby(["period", "style"], as_index=False)["prompt_count"].sum()
+    max_count = style_period["prompt_count"].max()
+    style_period["popularity"] = (style_period["prompt_count"] / max_count * 100).round(1)
 
     keywords = (
         prompts.groupby(["keyword", "intent", "tool", "style"], as_index=False)["prompt_count"]
@@ -260,42 +268,30 @@ def load_data():
 
     growth = prompts.pivot_table(
         index=["keyword", "intent", "tool", "style"],
-        columns="year",
+        columns="period",
         values="prompt_count",
         aggfunc="sum",
         fill_value=0,
     )
-    first_year = prompts["year"].min()
-    last_year = prompts["year"].max()
-    growth["growth"] = ((growth[last_year] - growth[first_year]) / growth[first_year].replace(0, 1) * 100).round(0)
+    periods = sorted(prompts["period"].unique())
+    midpoint = max(len(periods) // 2, 1)
+    early_periods = periods[:midpoint]
+    late_periods = periods[midpoint:]
+    growth["early_count"] = growth[early_periods].sum(axis=1)
+    growth["late_count"] = growth[late_periods].sum(axis=1)
+    growth["growth"] = (
+        (growth["late_count"] - growth["early_count"])
+        / growth["early_count"].replace(0, 1)
+        * 100
+    ).round(0)
     keywords = keywords.merge(
         growth["growth"].reset_index(),
         on=["keyword", "intent", "tool", "style"],
         how="left",
     )
 
-    segments = pd.DataFrame(
-        {
-            "creator_segment": [
-                "Brand Designers",
-                "Indie Filmmakers",
-                "Game Concept Artists",
-                "Social Creators",
-                "Fashion Teams",
-            ],
-            "primary_need": [
-                "commercially safe campaign imagery",
-                "cinematic storyboards and visual tone tests",
-                "worldbuilding and character exploration",
-                "fast distinctive visual hooks",
-                "editorial moodboards and look development",
-            ],
-            "adoption": [72, 81, 88, 93, 67],
-            "budget_sensitivity": [58, 74, 69, 82, 51],
-        }
-    )
-
-    return prompts, style_year, tools, keywords, segments, works, references
+    summary_values = dict(zip(summary["metric"], summary["value"]))
+    return prompts, style_period, tools, keywords, samplers, aspect_ratios, works, references, summary_values, examples
 
 
 def plot_layout(fig, height=430):
@@ -311,60 +307,58 @@ def plot_layout(fig, height=430):
     return fig
 
 
-def render_sidebar(styles, tools, min_year, max_year):
+def render_sidebar(styles, tools, periods):
     with st.sidebar:
         st.header("Dashboard Controls")
 
         if "selected_styles" not in st.session_state:
             st.session_state.selected_styles = styles[:5]
-        if "selected_year" not in st.session_state:
-            st.session_state.selected_year = max_year
+        if "selected_period" not in st.session_state:
+            st.session_state.selected_period = periods[-1]
         if "selected_tool" not in st.session_state:
             st.session_state.selected_tool = tools[0]
 
         if st.button("Random Explore", width="stretch"):
             st.session_state.selected_styles = [random.choice(styles)]
-            st.session_state.selected_year = random.randint(min_year, max_year)
+            st.session_state.selected_period = random.choice(periods)
             st.session_state.selected_tool = random.choice(tools)
             st.session_state.random_notice = True
 
         selected_styles = st.multiselect(
             "Visual styles",
             styles,
-            default=st.session_state.selected_styles,
             key="selected_styles",
         )
-        selected_year = st.slider(
-            "Analysis year",
-            min_year,
-            max_year,
-            st.session_state.selected_year,
-            key="selected_year",
+        selected_period = st.select_slider(
+            "Analysis date",
+            options=periods,
+            key="selected_period",
         )
         selected_tool = st.selectbox(
             "AI tool deep dive",
             tools,
-            index=tools.index(st.session_state.selected_tool),
             key="selected_tool",
         )
-        benchmark_focus = st.radio(
-            "Recommendation priority",
-            ["Balanced", "Best image quality", "Commercial safety", "Speed"],
+        benchmark_focus = st.selectbox(
+            "Capability focus",
+            ["text_to_image", "image_editing", "image_to_video", "public_trend_gallery", "open_local_customization"],
+            format_func=lambda item: item.replace("_", " ").title(),
         )
 
         st.markdown("### Data Source")
         st.markdown(
-            "[Stable-Diffusion-Prompts on Kaggle](https://www.kaggle.com/datasets/thedevastator/gustavosta-nlp-research-prompts/data)"
+            "[DiffusionDB dataset](https://huggingface.co/datasets/poloclub/diffusiondb)"
         )
         st.markdown(
-            "[900k Diffusion Prompts Dataset](https://www.kaggle.com/datasets/tanreinama/900k-diffusion-prompts-dataset)"
+            "[DiffusionDB research paper](https://arxiv.org/abs/2210.14896)"
         )
         st.caption(
-            "Current CSV is a semi-real aggregate shaped like a prompt analytics export. "
-            "Replace it with a Kaggle export for final deployment."
+            "Current CSVs are derived from the official DiffusionDB 2M metadata table. "
+            "The source contains real user-specified Stable Diffusion prompts and hyperparameters."
         )
         st.caption(
-            "Cleaning: duplicate keyword groups removed, unsafe tags excluded, style labels normalized, yearly prompt counts aggregated."
+            "Cleaning: valid timestamps only; image_nsfw < 0.1; prompt_nsfw < 0.1; "
+            "tracked styles assigned with documented keyword rules; counts aggregated by UTC date."
         )
 
         if st.session_state.get("random_notice"):
@@ -373,57 +367,51 @@ def render_sidebar(styles, tools, min_year, max_year):
     if not selected_styles:
         selected_styles = styles
 
-    return selected_styles, selected_year, selected_tool, benchmark_focus
+    return selected_styles, selected_period, selected_tool, benchmark_focus
 
 
-def render_hero(prompts, latest_df):
+def render_hero(prompts, latest_df, summary):
     top_style = latest_df.sort_values("popularity", ascending=False).iloc[0]
-    min_year = prompts["year"].min()
-    max_year = prompts["year"].max()
+    min_period = prompts["period"].min()
+    max_period = prompts["period"].max()
     growth_df = (
-        prompts[prompts["year"].isin([min_year, max_year])]
-        .groupby(["style", "year"], as_index=False)["prompt_count"]
+        prompts[prompts["period"].isin([min_period, max_period])]
+        .groupby(["style", "period"], as_index=False)["prompt_count"]
         .sum()
-        .pivot(index="style", columns="year", values="prompt_count")
+        .pivot(index="style", columns="period", values="prompt_count")
         .fillna(0)
     )
-    growth_df["growth"] = growth_df[max_year] - growth_df[min_year]
+    growth_df["growth"] = growth_df[max_period] - growth_df[min_period]
     fastest_style = growth_df.sort_values("growth", ascending=False).iloc[0]
-    total_prompts = int(prompts["prompt_count"].sum())
-    anime_2024 = prompts[(prompts["style"] == "Anime") & (prompts["year"] == max_year)]["prompt_count"].sum()
-    cyberpunk_2024 = prompts[(prompts["style"] == "Cyberpunk") & (prompts["year"] == max_year)]["prompt_count"].sum()
-    documentary_growth = (
-        prompts[(prompts["style"] == "Documentary Realism") & (prompts["year"] == max_year)]["prompt_count"].sum()
-        - prompts[(prompts["style"] == "Documentary Realism") & (prompts["year"] == min_year)]["prompt_count"].sum()
-    )
-    storyboard_growth = (
-        prompts[(prompts["style"] == "AI Cinematic Storyboard") & (prompts["year"] == max_year)]["prompt_count"].sum()
-        - prompts[(prompts["style"] == "AI Cinematic Storyboard") & (prompts["year"] == min_year)]["prompt_count"].sum()
-    )
+    safe_records = int(float(summary["safe_records"]))
+    classified_records = int(float(summary["classified_records"]))
+    top_two = latest_df.sort_values("prompt_count", ascending=False).head(2)
+    top_one = top_two.iloc[0]
+    runner_up = top_two.iloc[1] if len(top_two) > 1 else top_one
 
     st.caption("AI Visual Culture Research Dashboard")
     st.title("AI Visual Trend Dashboard")
     st.write(
-        "Explore visual styles, prompt language, creator needs, tool positioning, "
-        "representative AI-generated works, and forecasted creative directions."
+        "Explore real Stable Diffusion prompt signals, visual styles, tool capabilities, "
+        "representative concept images, and short-horizon creative directions."
     )
 
     metric_1, metric_2, metric_3, metric_4 = st.columns(4)
-    metric_1.metric("Top Style", str(top_style["style"]), f'{float(top_style["popularity"]):.1f} score')
-    metric_2.metric("Fastest Growth", str(fastest_style.name), f'+{int(fastest_style["growth"]):,}')
-    metric_3.metric("Prompts Analyzed", f"{total_prompts:,}", "semi-real records")
-    metric_4.metric("Data Years", f"{min_year}-{max_year}", f"{prompts['style'].nunique()} styles")
+    metric_1.metric("Top Tracked Style", str(top_style["style"]), f'{float(top_style["popularity"]):.1f} index')
+    metric_2.metric("Fastest Daily Growth", str(fastest_style.name), f'{int(fastest_style["growth"]):+,}')
+    metric_3.metric("Safe Prompts Analyzed", f"{safe_records:,}", "real DiffusionDB records")
+    metric_4.metric("Tracked Style Matches", f"{classified_records:,}", f"{prompts['style'].nunique()} documented rules")
 
     st.success(
-        f"Key insight: Anime-style prompt signals lead the {max_year} sample "
-        f"({anime_2024:,} records), while Cyberpunk remains close behind ({cyberpunk_2024:,} records) "
-        f"through lighting and atmosphere language. AI Cinematic Storyboard (+{storyboard_growth:,}) "
-        f"and Documentary Realism (+{documentary_growth:,}) are emerging signals, suggesting a shift "
-        "from pure aesthetics toward narrative, video-oriented, and believable visual storytelling."
+        f"Key insight from {max_period:%Y-%m-%d}: {top_one['style']} is the leading tracked style "
+        f"({int(top_one['prompt_count']):,} matched prompts), followed by {runner_up['style']} "
+        f"({int(runner_up['prompt_count']):,}). {fastest_style.name} has the largest first-to-last-day "
+        f"change ({int(fastest_style['growth']):+,} matched prompts)."
     )
     st.info(
-        "Data credibility note: this version uses a structured semi-real prompt dataset for demonstration. "
-        "The pipeline is designed so the CSV can be replaced with a Kaggle Stable Diffusion prompt export."
+        f"Data credibility note: statistics are derived from the official DiffusionDB 2M metadata table "
+        f"({min_period:%Y-%m-%d} to {max_period:%Y-%m-%d} UTC). Safety filtering and tracked-style "
+        "classification rules are documented in scripts/build_real_data.py."
     )
 
 
@@ -432,26 +420,26 @@ def render_snapshot():
     c1, c2, c3 = st.columns(3)
     with c1:
         with st.container(border=True):
-            st.write("**What changed?**")
-            st.caption("Creators are moving from simple style imitation toward mood, camera language, and art direction systems.")
+            st.write("**What is measured?**")
+            st.caption("Real DiffusionDB prompts are safety-filtered, classified with documented keyword rules, and aggregated by UTC date.")
     with c2:
         with st.container(border=True):
-            st.write("**What matters now?**")
-            st.caption("The strongest prompt signals combine subject, lighting, material, camera, emotion, and usage context.")
+            st.write("**What is not claimed?**")
+            st.caption("The tracked styles are a transparent analytical lens, not a universal ranking of every AI-generated image.")
     with c3:
         with st.container(border=True):
             st.write("**What makes this unique?**")
-            st.caption("The dashboard connects trends to representative images, tool choice, creator segments, and forecasts.")
+            st.caption("The dashboard connects real prompt signals to concept images, factual tool capabilities, parameters, and forecasts.")
 
 
 def render_toolchain_snapshot():
     show_section("AI Toolchain Snapshot")
-    st.caption("A quick view of where each tool fits in an AI visual production workflow.")
+    st.caption("A qualitative workflow map based on the official capability references linked in the Tool Benchmarks page.")
 
     toolchain = [
         {
             "stage": "Ideation",
-            "tools": "Midjourney / DALL-E",
+            "tools": "Midjourney / OpenAI Images",
             "why": "Fast concept exploration, strong mood, and visual style discovery.",
         },
         {
@@ -495,7 +483,7 @@ def render_drilldown(points, prompts, works):
 
     point = points[0]
     style = point.get("legendgroup") or point.get("y") or point.get("customdata", [None])[0]
-    year = point.get("x")
+    period = point.get("x")
 
     if isinstance(style, (int, float)):
         style = point.get("label")
@@ -503,8 +491,10 @@ def render_drilldown(points, prompts, works):
     detail = prompts.copy()
     if style in set(prompts["style"]):
         detail = detail[detail["style"] == style]
-    if year in set(prompts["year"]):
-        detail = detail[detail["year"] == int(year)]
+    if period is not None:
+        selected_date = pd.to_datetime(period, errors="coerce")
+        if not pd.isna(selected_date):
+            detail = detail[detail["period"] == selected_date]
 
     if detail.empty:
         st.warning("No detailed records found for the selected chart point.")
@@ -518,28 +508,29 @@ def render_drilldown(points, prompts, works):
     with c2:
         st.markdown("#### Drill-down details")
         st.dataframe(
-            detail[["year", "style", "tool", "keyword", "intent", "prompt_count"]]
+            detail[["period", "style", "tool", "keyword", "intent", "prompt_count"]]
             .sort_values("prompt_count", ascending=False),
             width="stretch",
             hide_index=True,
         )
 
 
-def tab_trends(prompts, style_year, segments, works, selected_styles, selected_year):
+def tab_trends(prompts, style_period, samplers, aspect_ratios, works, selected_styles, selected_period):
     show_section("Visual Trend Analysis")
-    st.caption("Click any line point or ranking bar to inspect the keywords and representative image behind that trend.")
-    filtered = style_year[(style_year["style"].isin(selected_styles)) & (style_year["year"] <= selected_year)]
-    latest = filtered[filtered["year"] == selected_year]
+    st.caption("Click any line point or ranking bar to inspect the real DiffusionDB keyword matches behind that trend.")
+    selected_date = pd.to_datetime(selected_period)
+    filtered = style_period[(style_period["style"].isin(selected_styles)) & (style_period["period"] <= selected_date)]
+    latest = filtered[filtered["period"] == selected_date]
 
     col_line, col_bar = st.columns([1.25, 1])
     with col_line:
         fig_trend = px.line(
             filtered,
-            x="year",
+            x="period",
             y="popularity",
             color="style",
             markers=True,
-            title="Style popularity over time",
+            title="Tracked style index by UTC date",
             color_discrete_sequence=px.colors.qualitative.Set2,
             custom_data=["style"],
         )
@@ -558,7 +549,7 @@ def tab_trends(prompts, style_year, segments, works, selected_styles, selected_y
             y="style",
             orientation="h",
             color="style",
-            title=f"Style ranking in {selected_year}",
+            title=f"Tracked style ranking on {selected_date:%Y-%m-%d}",
             color_discrete_sequence=px.colors.qualitative.Set2,
             custom_data=["style"],
         )
@@ -573,18 +564,27 @@ def tab_trends(prompts, style_year, segments, works, selected_styles, selected_y
     show_section("Clicked Insight")
     render_drilldown(selected_points(trend_event) or selected_points(bar_event), prompts, works)
 
-    show_section("Creator Segment Map")
-    fig_segment = px.scatter(
-        segments,
-        x="budget_sensitivity",
-        y="adoption",
-        size="adoption",
-        color="creator_segment",
-        hover_data=["primary_need"],
-        title="Who is adopting AI visuals, and why?",
-        color_discrete_sequence=px.colors.qualitative.Bold,
+    show_section("Real Metadata Profile")
+    st.caption("These charts come directly from DiffusionDB metadata after the same safety filter.")
+    col_sampler, col_ratio = st.columns([1.35, 1])
+    fig_sampler = px.bar(
+        samplers.sort_values("prompt_count"),
+        x="prompt_count",
+        y="sampler",
+        orientation="h",
+        title="Sampler distribution in safe records",
+        color="share_percent",
+        color_continuous_scale="Teal",
     )
-    st.plotly_chart(plot_layout(fig_segment, height=470), use_container_width=True)
+    col_sampler.plotly_chart(plot_layout(fig_sampler, height=430), use_container_width=True)
+    fig_ratio = px.pie(
+        aspect_ratios,
+        names="aspect_ratio",
+        values="prompt_count",
+        title="Image aspect-ratio distribution",
+        color_discrete_sequence=px.colors.qualitative.Set2,
+    )
+    col_ratio.plotly_chart(plot_layout(fig_ratio, height=430), use_container_width=True)
 
 
 def render_work_card(row):
@@ -600,8 +600,9 @@ def render_work_card(row):
 def tab_gallery(works, styles):
     show_section("Representative Works Gallery")
     st.caption(
-        "Representative images are generated AI concept assets stored locally in assets/. "
-        "Each card turns the image into visual evidence by naming composition, lighting, color, and use-case signals."
+        "These locally stored AI-generated concept images are illustrative examples, not records from DiffusionDB "
+        "and not third-party artworks. Each card explains how visible composition, lighting, color, and use-case "
+        "signals relate to a tracked prompt category."
     )
 
     gallery_filter = st.selectbox("Gallery filter", ["All styles"] + styles, key="gallery_style_filter")
@@ -614,62 +615,61 @@ def tab_gallery(works, styles):
 
 
 def tab_tools(tools, selected_tool, benchmark_focus):
-    show_section("AI Tool Comparison")
+    show_section("AI Tool Capability Comparison")
+    st.caption(
+        "This page intentionally avoids invented 0-100 quality scores. Values summarize documented product "
+        "capabilities from the linked official pages; they are not a universal ranking."
+    )
 
-    radar_metrics = ["popularity", "speed", "quality", "creativity", "ease_of_use", "commercial_safety"]
-    fig_radar = go.Figure()
-    for _, row in tools.iterrows():
-        opacity = 0.86 if row["tool"] == selected_tool else 0.18
-        width = 4 if row["tool"] == selected_tool else 1.5
-        fig_radar.add_trace(
-            go.Scatterpolar(
-                r=[row[metric] for metric in radar_metrics],
-                theta=["Popularity", "Speed", "Quality", "Creativity", "Ease of Use", "Commercial Safety"],
-                fill="toself",
-                name=row["tool"],
-                opacity=opacity,
-                line={"width": width},
-            )
+    capability_columns = [
+        "text_to_image",
+        "image_editing",
+        "image_to_video",
+        "public_trend_gallery",
+        "open_local_customization",
+    ]
+    capability_labels = {item: item.replace("_", " ").title() for item in capability_columns}
+    display = tools.copy()
+    display["documented_yes_count"] = display[capability_columns].eq("Yes").sum(axis=1)
+    display["selected"] = np.where(display["tool"] == selected_tool, "Selected tool", "Other tools")
+
+    fig = px.bar(
+        display,
+        x="tool",
+        y="documented_yes_count",
+        color="selected",
+        title="Explicitly documented capabilities by tool",
+        color_discrete_map={"Selected tool": THEME["gold"], "Other tools": THEME["cyan"]},
+        hover_data=capability_columns,
+    )
+    st.plotly_chart(plot_layout(fig, height=430), use_container_width=True)
+
+    focused = tools[tools[benchmark_focus] == "Yes"]["tool"].tolist()
+    if focused:
+        st.success(f"Tools explicitly documenting {capability_labels[benchmark_focus]}: {', '.join(focused)}.")
+    else:
+        st.info(
+            f"No row is labeled an unqualified Yes for {capability_labels[benchmark_focus]}. "
+            "Check the capability matrix and official links for workflow-specific details."
         )
-    fig_radar.update_layout(polar={"radialaxis": {"visible": True, "range": [0, 100]}})
-    radar_event = st.plotly_chart(
-        plot_layout(fig_radar, height=540),
-        use_container_width=True,
-        on_select="rerun",
-        selection_mode="points",
-        key="tool_radar",
-    )
 
-    weights = {
-        "Balanced": {"popularity": .15, "speed": .12, "quality": .22, "creativity": .22, "ease_of_use": .14, "commercial_safety": .15},
-        "Best image quality": {"popularity": .10, "speed": .08, "quality": .40, "creativity": .25, "ease_of_use": .07, "commercial_safety": .10},
-        "Commercial safety": {"popularity": .10, "speed": .12, "quality": .16, "creativity": .12, "ease_of_use": .15, "commercial_safety": .35},
-        "Speed": {"popularity": .10, "speed": .40, "quality": .16, "creativity": .14, "ease_of_use": .14, "commercial_safety": .06},
-    }
-    score_df = tools.copy()
-    score_df["score"] = sum(score_df[column] * weight for column, weight in weights[benchmark_focus].items())
-    winner = score_df.sort_values("score", ascending=False).iloc[0]
-
-    st.success(
-        f'Recommended for {benchmark_focus}: {winner["tool"]}. Best used for {winner["best_for"]}.'
-    )
+    matrix = tools[["tool"] + capability_columns].rename(columns=capability_labels)
+    st.dataframe(matrix, width="stretch", hide_index=True)
 
     show_section(f"{selected_tool} Deep Dive")
     tool_info = tools[tools["tool"] == selected_tool].iloc[0]
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Quality", int(tool_info["quality"]))
-    c2.metric("Creativity", int(tool_info["creativity"]))
-    c3.metric("Ease of Use", int(tool_info["ease_of_use"]))
-    c4.metric("Commercial Safety", int(tool_info["commercial_safety"]))
-
-    radar_points = selected_points(radar_event)
-    if radar_points:
-        st.caption(f"Selected radar dimension: {radar_points[0].get('theta', 'metric')}.")
+    st.write(f'**Best fit:** {tool_info["best_for"]}')
+    st.caption(tool_info["evidence_note"])
+    st.link_button("Open official capability reference", tool_info["official_url"])
 
 
-def tab_keywords(keywords, selected_tool):
+def tab_keywords(keywords, selected_styles):
     show_section("Prompt Language Intelligence")
-    filtered_keywords = keywords[keywords["tool"] == selected_tool]
+    filtered_keywords = keywords[keywords["style"].isin(selected_styles)]
+    st.caption(
+        "Keyword frequency and growth are derived from real DiffusionDB prompt matches. "
+        "Growth compares the first half of the collection window with the second half."
+    )
 
     col_scatter, col_table = st.columns([1.35, 1])
     with col_scatter:
@@ -680,12 +680,12 @@ def tab_keywords(keywords, selected_tool):
             size="frequency",
             color="intent",
             hover_name="keyword",
-            title=f"Keyword frequency vs. growth for {selected_tool}",
+            title="Keyword frequency vs. growth for selected styles",
             color_discrete_sequence=px.colors.qualitative.Set3,
         )
         keyword_event = st.plotly_chart(
             plot_layout(fig_keywords),
-            width="stretch",
+            use_container_width=True,
             on_select="rerun",
             selection_mode="points",
             key="keyword_chart",
@@ -695,7 +695,7 @@ def tab_keywords(keywords, selected_tool):
         st.dataframe(
             filtered_keywords[["keyword", "style", "intent", "frequency", "growth"]]
             .sort_values(["growth", "frequency"], ascending=False),
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
 
@@ -708,29 +708,32 @@ def tab_keywords(keywords, selected_tool):
         st.info(f"Selected keyword: {points[0].get('hovertext', points[0].get('text', 'keyword'))}")
 
 
-def predict_styles(style_year):
-    future_years = np.array([2025, 2026, 2027])
+def predict_styles(style_period):
+    future_periods = pd.date_range(style_period["period"].max() + pd.Timedelta(days=1), periods=7, freq="D")
     rows = []
-    for style, group in style_year.groupby("style"):
-        group = group.sort_values("year")
-        x = group["year"].to_numpy().reshape(-1, 1)
+    for style, group in style_period.groupby("style"):
+        group = group.sort_values("period")
+        origin = group["period"].min()
+        x = (group["period"] - origin).dt.days.to_numpy().reshape(-1, 1)
         y = group["popularity"].to_numpy()
+        future_x = (future_periods - origin).days.to_numpy().reshape(-1, 1)
 
         if LinearRegression is not None:
             model = LinearRegression().fit(x, y)
-            preds = model.predict(future_years.reshape(-1, 1))
+            preds = model.predict(future_x)
+            fitted = model.predict(x)
         else:
-            slope, intercept = np.polyfit(group["year"].to_numpy(), y, 1)
-            preds = future_years * slope + intercept
+            slope, intercept = np.polyfit(x.flatten(), y, 1)
+            preds = future_x.flatten() * slope + intercept
+            fitted = x.flatten() * slope + intercept
 
-        fitted = np.interp(group["year"], group["year"], y)
         residual = float(np.std(y - fitted)) if len(y) > 1 else 3.0
         interval = max(residual, 3.0)
-        for year, pred in zip(future_years, preds):
+        for period, pred in zip(future_periods, preds):
             pred = float(np.clip(pred, 0, 100))
             rows.append(
                 {
-                    "year": int(year),
+                    "period": period,
                     "style": style,
                     "prediction": round(pred, 1),
                     "lower": round(max(0, pred - interval), 1),
@@ -769,7 +772,7 @@ def use_case_recommendation(works):
         },
         "Product render": {
             "style": "3D Render",
-            "tool": "DALL-E",
+            "tool": "OpenAI Images / DALL-E",
             "why": "Best for clean object studies, material exploration, and fast product visualization.",
         },
     }
@@ -812,7 +815,7 @@ def motion_preview():
             st.caption(f"{title}: {caption}")
 
 
-def tab_strategy(style_year, works, styles):
+def tab_strategy(style_period, works, styles):
     show_section("Creative Direction Generator")
     col_a, col_b, col_c = st.columns(3)
     with col_a:
@@ -850,17 +853,17 @@ def tab_strategy(style_year, works, styles):
         with cols[index]:
             st.image(str(BASE_DIR / row["image"]), caption=f'{row["style"]} | {row["model"]}')
 
-    show_section("Forecast: 2025-2027")
+    show_section("Exploratory Forecast: Next 7 Days")
     st.caption(
-        "Forecasts are exploratory and based on linear extrapolation of historical prompt counts. "
-        "They are useful for storytelling and comparison, not production forecasting."
+        "Forecasts are exploratory and based on linear extrapolation of the short DiffusionDB collection window. "
+        "They are useful for demonstrating a method, not for long-term production forecasting."
     )
-    forecast = predict_styles(style_year)
+    forecast = predict_styles(style_period)
     fig_forecast = go.Figure()
     for style, group in forecast.groupby("style"):
         fig_forecast.add_trace(
             go.Scatter(
-                x=group["year"],
+                x=group["period"],
                 y=group["prediction"],
                 mode="lines+markers",
                 name=style,
@@ -868,7 +871,7 @@ def tab_strategy(style_year, works, styles):
         )
         fig_forecast.add_trace(
             go.Scatter(
-                x=list(group["year"]) + list(group["year"])[::-1],
+                x=list(group["period"]) + list(group["period"])[::-1],
                 y=list(group["upper"]) + list(group["lower"])[::-1],
                 fill="toself",
                 fillcolor="rgba(102,217,232,0.08)",
@@ -905,54 +908,62 @@ def tab_references(references):
                 st.caption(f"Visual evidence: {row['visual_evidence']}")
 
 
-def render_data_notes(prompts):
+def render_data_notes(prompts, summary):
     show_section("Data Notes")
     source = prompts["source"].iloc[0]
     c1, c2, c3 = st.columns(3)
     with c1:
         with st.container(border=True):
-            st.write("**Current Data**")
-            st.caption(f"{source}. The included CSV is a structured demo dataset, not a claim of full production-scale collection.")
+            st.write("**Real Source Data**")
+            st.caption(
+                f"{source}. {int(float(summary['raw_records'])):,} official metadata rows; "
+                f"{int(float(summary['safe_records'])):,} rows after documented safety filters."
+            )
     with c2:
         with st.container(border=True):
             st.write("**Processing**")
-            st.caption("CSV records are grouped by year, style, tool, keyword, and intent; counts are normalized into popularity scores.")
+            st.caption(
+                "Tracked styles use transparent keyword rules in scripts/build_real_data.py. "
+                "Matches are grouped by UTC date, style, keyword, and intent."
+            )
     with c3:
         with st.container(border=True):
-            st.write("**Final Upgrade Path**")
-            st.caption("For final grading, replace the prompt CSV with a Kaggle Stable Diffusion export or your own prompt log while keeping the same schema.")
+            st.write("**Interpretation Boundary**")
+            st.caption(
+                f"{float(summary['classification_coverage']):.2f}% of safety-filtered prompts match a tracked style. "
+                "The dashboard reports a transparent analytical lens, not a complete ontology."
+            )
 
 
 def main():
     inject_css()
     with st.spinner("Loading trends..."):
-        prompts, style_year, tools, keywords, segments, works, references = load_data()
+        prompts, style_period, tools, keywords, samplers, aspect_ratios, works, references, summary, examples = load_data()
 
     styles = sorted(prompts["style"].unique().tolist())
     tool_names = tools["tool"].tolist()
-    min_year = int(prompts["year"].min())
-    max_year = int(prompts["year"].max())
+    periods = sorted(prompts["period"].dt.strftime("%Y-%m-%d").unique().tolist())
 
-    selected_styles, selected_year, selected_tool, benchmark_focus = render_sidebar(
+    selected_styles, selected_period, selected_tool, benchmark_focus = render_sidebar(
         styles,
         tool_names,
-        min_year,
-        max_year,
+        periods,
     )
 
-    filtered_latest = style_year[
-        (style_year["style"].isin(selected_styles)) & (style_year["year"] == selected_year)
+    selected_date = pd.to_datetime(selected_period)
+    filtered_latest = style_period[
+        (style_period["style"].isin(selected_styles)) & (style_period["period"] == selected_date)
     ]
     if filtered_latest.empty:
-        filtered_latest = style_year[style_year["year"] == selected_year]
+        filtered_latest = style_period[style_period["period"] == selected_date]
 
-    render_hero(prompts, filtered_latest)
+    render_hero(prompts, filtered_latest, summary)
     render_toolchain_snapshot()
 
     if len(selected_styles) == 1:
         st.success(
-            f"Random exploration insight: {selected_styles[0]} in {selected_year} is linked to "
-            f"{selected_tool}. Open the gallery and keyword tabs to inspect the evidence."
+            f"Random exploration insight: {selected_styles[0]} on {selected_period} can be inspected alongside "
+            f"{selected_tool}. Open the gallery and keyword pages to inspect the evidence."
         )
 
     render_snapshot()
@@ -978,21 +989,24 @@ def main():
 
     if active_page == "Trend Analytics":
         with st.spinner("Rendering trend analytics..."):
-            tab_trends(prompts, style_year, segments, works, selected_styles, selected_year)
+            tab_trends(prompts, style_period, samplers, aspect_ratios, works, selected_styles, selected_period)
     elif active_page == "Representative Works":
         tab_gallery(works, styles)
     elif active_page == "Tool Benchmarks":
         tab_tools(tools, selected_tool, benchmark_focus)
     elif active_page == "Prompt Language":
-        tab_keywords(keywords, selected_tool)
+        tab_keywords(keywords, selected_styles)
     elif active_page == "Creative Strategy":
-        tab_strategy(style_year, works, styles)
+        tab_strategy(style_period, works, styles)
     elif active_page == "Real References":
         tab_references(references)
 
-    render_data_notes(prompts)
+    render_data_notes(prompts, summary)
 
-    st.caption("Built by HEDAN | Streamlit, Plotly, Pandas, and AI-generated representative visuals")
+    st.caption(
+        "Built by HEDAN | Real prompt statistics derived from DiffusionDB CC0 metadata | "
+        "Streamlit, Plotly, Pandas, and illustrative local AI-generated concept visuals"
+    )
 
 
 if __name__ == "__main__":

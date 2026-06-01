@@ -22,16 +22,16 @@ Walk through the website structure: Home, Trend Analytics, Representative Works,
 Explain the dark UI, neon accents, sidebar navigation, responsive layout, and AI-themed visual language.
 
 ## Slide 8: Data Foundation
-Clarify the dataset plan. The current dataset is semi-real and self-contained, with 22,050 structured prompt signals and a schema that can be replaced by a Kaggle prompt export.
+Clarify the real dataset pipeline. The dashboard starts with the official DiffusionDB 2M metadata table, keeps 981,354 prompt records after documented safety filters, and assigns 263,472 tracked-style prompt matches with transparent rules.
 
 ## Slide 9: Trend Analytics
-Present the key insight: Anime leads 2024 sample volume, while AI Cinematic Storyboard indicates a shift toward narrative and video-oriented visual thinking.
+Present the live-data insight: on 2022-08-20 UTC, 3D Render is the leading tracked style with 2,306 matched prompts, followed by Anime and Cyberpunk.
 
 ## Slide 10: Representative Works
 Explain why representative AI-generated images strengthen the dashboard: they make abstract style categories visible and understandable.
 
 ## Slide 11: AI Toolchain Benchmark
-Explain that the dashboard compares tools by production role: art direction, rapid ideation, custom workflow, commercial design, and motion/video.
+Explain that the dashboard avoids invented quality scores. It compares factual, source-linked capabilities and production roles: text-to-image, editing, video, customization, and discovery workflows.
 
 ## Slide 12: Interaction Design
 Describe the live interaction design: linked filters, click drill-down, random exploration, cached loading, and performance feedback.

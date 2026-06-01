@@ -1,12 +1,12 @@
 # AI Visual Trend Dashboard
 
-An interactive Streamlit dashboard for exploring AI-generated visual culture through prompt trends, tool benchmarks, representative AI-generated works, keyword signals, and simple 2025-2027 trend forecasts.
+An interactive Streamlit dashboard for exploring AI-generated visual culture through real DiffusionDB prompt statistics, factual tool capability references, illustrative representative works, keyword signals, and short-horizon exploratory forecasts.
 
 ## Key Insight
 
-Anime-style prompt signals show the strongest 2024 sample volume, while Cyberpunk remains highly competitive through lighting and atmosphere keywords. AI Cinematic Storyboard and Documentary Realism are emerging signals, suggesting AI visual culture is moving from pure aesthetic imitation toward believable narrative and video-oriented image-making.
+The dashboard reports style signals found in the official DiffusionDB 2M metadata table. Tracked styles are assigned with documented keyword rules, so the results are transparent and reproducible rather than presented as a universal ranking of AI art.
 
-The dashboard supports this insight by connecting normalized prompt counts, keyword growth, representative AI-generated images, tool benchmarks, and exploratory linear forecasts.
+The website connects real prompt counts, keyword growth, sampler metadata, aspect-ratio distribution, illustrative concept images, official tool capability references, and exploratory linear forecasts.
 
 ## Live Demo
 
@@ -57,56 +57,77 @@ streamlit run app.py --server.port 8510
 Current project data lives in:
 
 - `data/prompt_trend_signals.csv`
+- `data/dataset_summary.csv`
+- `data/sampler_distribution.csv`
+- `data/aspect_ratio_distribution.csv`
+- `data/prompt_examples.csv`
 - `data/tool_benchmarks.csv`
 - `data/representative_works.csv`
 - `data/real_world_references.csv`
 
-The included prompt dataset is a semi-real aggregate built from public Stable Diffusion prompt dataset structures, Lexica-style gallery tags, and AI tool category patterns. It is designed to match a real Kaggle workflow while keeping the project self-contained.
+The statistics are derived from the official [DiffusionDB dataset](https://huggingface.co/datasets/poloclub/diffusiondb), a CC0 dataset of real Stable Diffusion Discord generations. The dashboard uses the official 2M-row text-only `metadata.parquet` table.
 
-Data boundary:
+Source references:
 
-```text
-Current data: structured semi-real demonstration dataset
-Final data path: replace the CSV with a Kaggle Stable Diffusion prompt export or your own prompt log
-```
-
-Recommended final replacement source:
-
-- [Stable-Diffusion-Prompts on Kaggle](https://www.kaggle.com/datasets/thedevastator/gustavosta-nlp-research-prompts/data)
-- [900k Diffusion Prompts Dataset on Kaggle](https://www.kaggle.com/datasets/tanreinama/900k-diffusion-prompts-dataset)
-- Lexica-style public prompt gallery exports
-- Public AI tool documentation and changelogs
-- Your own prompt logs or survey data
+- [DiffusionDB dataset card](https://huggingface.co/datasets/poloclub/diffusiondb)
+- [DiffusionDB paper](https://arxiv.org/abs/2210.14896)
+- [DiffusionDB GitHub repository](https://github.com/poloclub/diffusiondb)
 
 Data cleaning and aggregation:
 
-- Duplicate keyword groups removed
-- Unsafe categories excluded
-- Visual style labels normalized
-- Prompt records grouped by year, style, tool, keyword, and intent
-- Prompt counts normalized into popularity scores
+- Start with `2,000,000` official metadata rows
+- Require a valid timestamp
+- Keep `image_nsfw < 0.1`
+- Keep `prompt_nsfw < 0.1`
+- Retain `981,354` safety-filtered prompt records
+- Assign tracked styles with transparent keyword rules in `scripts/build_real_data.py`
+- Aggregate matches by UTC date, style, keyword, and intent
+- Normalize daily tracked-style counts into an index for chart comparison
 
-Total analyzed prompt signals in the included CSV:
+Tracked-style classification:
 
 ```text
-22,050
+Safe DiffusionDB records analyzed: 981,354
+Tracked-style prompt matches: 263,472
+Classification coverage: 26.85%
+Source time window: 2022-08-06 to 2022-08-20 UTC
+```
+
+The tracked-style coverage is intentionally partial. Prompts without an explicit rule match remain part of the analyzed source population but are not forced into a style category.
+
+## Rebuild The Real Data
+
+Download the official DiffusionDB metadata table to a temporary folder:
+
+```bash
+curl -L -o /private/tmp/diffusiondb_metadata.parquet \
+  https://huggingface.co/datasets/poloclub/diffusiondb/resolve/main/metadata.parquet
+```
+
+Rebuild the dashboard CSV files:
+
+```bash
+python3 scripts/build_real_data.py \
+  --metadata /private/tmp/diffusiondb_metadata.parquet \
+  --output-dir data
 ```
 
 ## Features
 
 - Cached CSV data loading with `st.cache_data`
-- Sidebar filters for style, year, tool, and recommendation priority
+- Sidebar filters for style, UTC date, tool, and capability focus
 - Random exploration button for live demos
 - Homepage AI Toolchain Snapshot showing where each tool fits in the production workflow
 - Plotly chart selection with click drill-down
-- Linked tool filter for radar chart and keyword analysis
-- Representative AI-generated work gallery using local image assets and visual evidence captions
+- Factual AI tool capability matrix with official source links and no invented 0-100 quality scores
+- Real sampler and aspect-ratio metadata charts
+- Representative AI-generated concept gallery using local illustrative assets and visual evidence captions
 - Use Case Recommendation for brand campaigns, game concepts, social visuals, short film moodboards, and product renders
 - Motion Preview GIFs for cinematic, editorial, and luxury use cases
 - Real-World References page with official tool links and trend evidence notes
 - Stable prompt text area for copying generated creative directions
 - Moodboard preview based on selected visual styles
-- Exploratory linear forecast for 2025-2027 with uncertainty interval
+- Exploratory next-7-days linear forecast with uncertainty interval
 - Friendly error handling for missing or invalid CSV files
 
 ## Visual Style Coverage
@@ -151,21 +172,17 @@ Record a 1-2 minute Loom or OBS video:
 1. Show the dashboard hero metrics and data volume.
 2. Use the sidebar filters.
 3. Click a trend chart point to show drill-down details.
-4. Open Representative Works and explain why images support the trends.
+4. Open Representative Works and explain that the local images are illustrative concept assets.
 5. Use Random Explore.
 6. Show Use Case Recommendation and Motion Preview.
 7. Open Real References to show official research links.
 8. Copy a creative direction prompt.
-9. Show the forecast chart.
+9. Show the short-horizon forecast chart and explain its limitation.
 
 ## Suggested Presentation Insight
 
-Example insight for a defense slide:
+Use the latest dashboard result shown in the hero metrics during your presentation. The insight is computed from real daily DiffusionDB prompt matches:
 
-> Anime has the strongest 2024 prompt volume in the included signal dataset, while AI Cinematic Storyboard and Documentary Realism show strong emerging growth. This suggests prompt culture is shifting from static style imitation toward narrative, video-oriented, and believable visual storytelling.
-
-How it was found:
-
-- Prompt counts were grouped by `year` and `style`.
-- Each style was normalized into a popularity score.
-- 2024 style rankings were compared against keyword growth signals.
+- Prompt matches are grouped by UTC `period` and tracked `style`.
+- Each daily style count is normalized into a comparison index.
+- The latest date is compared with the first date to identify the largest observed change.

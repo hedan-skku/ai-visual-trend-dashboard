@@ -1,0 +1,12 @@
+metric,value,note
+source_name,DiffusionDB 2M metadata.parquet,Official DiffusionDB 2M text-only metadata table
+source_url,https://huggingface.co/datasets/poloclub/diffusiondb,Dataset distribution page
+paper_url,https://arxiv.org/abs/2210.14896,ACL 2023 DiffusionDB paper
+license,CC0 1.0,DiffusionDB dataset license
+raw_records,2000000,Rows in the official metadata parquet table
+safe_records,981354,Rows after timestamp and NSFW threshold filters
+classified_records,263472,Safe prompts matched by the documented style rules
+classification_coverage,26.85,Percent of safe prompts matched by one tracked style rule
+first_timestamp_utc,2022-08-06T21:59:00+00:00,First safe record timestamp
+last_timestamp_utc,2022-08-20T13:33:00+00:00,Last safe record timestamp
+safety_filter,image_nsfw < 0.1; prompt_nsfw < 0.1; timestamp present,Applied before aggregation

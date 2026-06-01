@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+*.parquet
 .DS_Store
 .streamlit/secrets.toml
 streamlit_*.log

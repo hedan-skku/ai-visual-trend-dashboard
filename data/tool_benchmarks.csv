@@ -1,6 +1,6 @@
-tool,popularity,speed,quality,creativity,ease_of_use,commercial_safety,best_for
-Midjourney,92,76,95,98,78,78,High-end art direction and mood exploration
-DALL-E,82,90,86,88,95,82,Rapid concept exploration and prompt iteration
-Stable Diffusion,86,82,83,87,63,62,Custom workflows control and open experimentation
-Adobe Firefly,72,88,80,74,93,95,Brand-safe commercial design production
-Runway,79,80,87,90,82,74,AI video motion tests and cinematic sequences
+tool,text_to_image,image_editing,image_to_video,public_trend_gallery,open_local_customization,best_for,official_url,evidence_note
+Midjourney,Yes,Yes,Yes,Yes,No,Visual ideation style exploration and short image-to-video animation,https://docs.midjourney.com/docs/en/video,Midjourney Video documentation describes turning a starting image into a five-second video with optional prompt and motion controls
+OpenAI Images / DALL-E,Yes,Yes,No,No,API workflow,Instruction-following image generation and editing,https://help.openai.com/en/articles/11128753-gpt-image-api,GPT Image API documents generation editing transformation and model-specific image capabilities
+Stable Diffusion,Yes,Workflow-dependent,Ecosystem-dependent,Community datasets,Yes,Open model experimentation and customizable workflows,https://huggingface.co/datasets/poloclub/diffusiondb,DiffusionDB documents real Stable Diffusion Discord prompts hyperparameters and human-actuated generation records
+Adobe Firefly,Yes,Yes,Yes,No,Adobe ecosystem,Commercial creative production workflows,https://www.adobe.com/products/firefly.html,Adobe Firefly product page presents generative image video audio and design workflows
+Runway,Yes,Yes,Yes,No,Platform workflow,Image-to-video motion and cinematic iteration,https://help.runwayml.com/hc/en-us/articles/48324313115155-Image-to-Video-Prompting-Guide,Runway guide documents image-to-video prompts motion camera work and temporal progression
