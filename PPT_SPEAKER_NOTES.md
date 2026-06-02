@@ -37,7 +37,7 @@ Explain that the dashboard avoids invented quality scores. It compares factual, 
 Describe the live interaction design: linked filters, click drill-down, random exploration, cached loading, and performance feedback.
 
 ## Slide 13: Creative Strategy Layer
-Show how the dashboard turns analysis into creative output through recommendations, prompt direction, moodboard preview, motion preview, and forecasting.
+Show how the dashboard turns analysis into creative output through recommendations, prompt direction, moodboard preview, motion preview, and 7-, 14-, and 21-day exploratory projections. Use the momentum map to explain how current share and recent movement reveal different style trajectories.
 
 ## Slide 14: Technical Implementation
 Highlight maintainability: modular functions, cached CSV loading, error handling, local assets, requirements file, README, and GitHub repository.

@@ -6,7 +6,7 @@ An interactive Streamlit dashboard for exploring AI-generated visual culture thr
 
 The dashboard reports style signals found in the official DiffusionDB 2M metadata table. Tracked styles are assigned with documented keyword rules, so the results are transparent and reproducible rather than presented as a universal ranking of AI art.
 
-The website connects real prompt counts, keyword growth, sampler metadata, aspect-ratio distribution, illustrative concept images, official tool capability references, and exploratory linear forecasts.
+The website connects real prompt counts, keyword growth, sampler metadata, aspect-ratio distribution, illustrative concept images, official tool capability references, and exploratory multi-horizon trend forecasts.
 
 ## Live Demo
 
@@ -82,7 +82,7 @@ Data cleaning and aggregation:
 - Retain `981,354` safety-filtered prompt records
 - Assign tracked styles with transparent keyword rules in `scripts/build_real_data.py`
 - Aggregate matches by UTC date, style, keyword, and intent
-- Normalize daily tracked-style counts into an index for chart comparison
+- Normalize daily tracked-style counts into an index for trend charts and into daily tracked-match shares for forecast comparison
 
 Tracked-style classification:
 
@@ -127,7 +127,7 @@ python3 scripts/build_real_data.py \
 - Real-World References page with official tool links and trend evidence notes
 - Stable prompt text area for copying generated creative directions
 - Moodboard preview based on selected visual styles
-- Exploratory next-7-days linear forecast with uncertainty interval
+- Exploratory 7-, 14-, and 21-day weighted projections using daily tracked-match shares, momentum signals, and expanding uncertainty intervals
 - Friendly error handling for missing or invalid CSV files
 
 ## Visual Style Coverage
@@ -177,7 +177,7 @@ Record a 1-2 minute Loom or OBS video:
 6. Show Use Case Recommendation and Motion Preview.
 7. Open Real References to show official research links.
 8. Copy a creative direction prompt.
-9. Show the short-horizon forecast chart and explain its limitation.
+9. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
 
 ## Suggested Presentation Insight
 

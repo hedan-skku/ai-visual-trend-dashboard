@@ -708,39 +708,84 @@ def tab_keywords(keywords, selected_styles):
         st.info(f"Selected keyword: {points[0].get('hovertext', points[0].get('text', 'keyword'))}")
 
 
-def predict_styles(style_period):
-    future_periods = pd.date_range(style_period["period"].max() + pd.Timedelta(days=1), periods=7, freq="D")
-    rows = []
-    for style, group in style_period.groupby("style"):
-        group = group.sort_values("period")
-        origin = group["period"].min()
-        x = (group["period"] - origin).dt.days.to_numpy().reshape(-1, 1)
-        y = group["popularity"].to_numpy()
-        future_x = (future_periods - origin).days.to_numpy().reshape(-1, 1)
+def forecast_direction(change):
+    if change >= 3:
+        return "Accelerating"
+    if change >= 1:
+        return "Rising"
+    if change <= -3:
+        return "Cooling quickly"
+    if change <= -1:
+        return "Cooling"
+    return "Stable"
+
+
+def predict_styles(style_period, max_horizon=21):
+    observed = style_period.copy()
+    observed["daily_total"] = observed.groupby("period")["prompt_count"].transform("sum")
+    observed["trend_share"] = observed["prompt_count"] / observed["daily_total"] * 100
+
+    future_periods = pd.date_range(
+        observed["period"].max() + pd.Timedelta(days=1),
+        periods=max_horizon,
+        freq="D",
+    )
+    forecast_rows = []
+    outlook_rows = []
+
+    for style, group in observed.groupby("style"):
+        group = group.sort_values("period").tail(14)
+        x = np.arange(len(group), dtype=float).reshape(-1, 1)
+        y = group["trend_share"].to_numpy()
+        weights = np.linspace(1.0, 2.2, len(group))
 
         if LinearRegression is not None:
-            model = LinearRegression().fit(x, y)
-            preds = model.predict(future_x)
+            model = LinearRegression().fit(x, y, sample_weight=weights)
+            slope = float(model.coef_[0])
             fitted = model.predict(x)
         else:
-            slope, intercept = np.polyfit(x.flatten(), y, 1)
-            preds = future_x.flatten() * slope + intercept
+            slope, intercept = np.polyfit(x.flatten(), y, 1, w=weights)
             fitted = x.flatten() * slope + intercept
 
-        residual = float(np.std(y - fitted)) if len(y) > 1 else 3.0
-        interval = max(residual, 3.0)
-        for period, pred in zip(future_periods, preds):
-            pred = float(np.clip(pred, 0, 100))
-            rows.append(
+        current_share = float(y[-1])
+        residual = float(np.std(y - fitted)) if len(y) > 1 else 0.35
+        volatility = float(np.std(np.diff(y))) if len(y) > 1 else 0.35
+        interval_base = max(residual, volatility * 0.7, 0.35)
+        recent_mean = float(y[-3:].mean())
+        previous_mean = float(y[-6:-3].mean()) if len(y) >= 6 else float(y[:3].mean())
+        recent_momentum = recent_mean - previous_mean
+
+        for step, period in enumerate(future_periods, start=1):
+            prediction = float(np.clip(current_share + slope * step, 0, 100))
+            interval = interval_base * np.sqrt(1 + step / 4)
+            forecast_rows.append(
                 {
                     "period": period,
                     "style": style,
-                    "prediction": round(pred, 1),
-                    "lower": round(max(0, pred - interval), 1),
-                    "upper": round(min(100, pred + interval), 1),
+                    "step": step,
+                    "prediction": round(prediction, 2),
+                    "lower": round(max(0, prediction - interval), 2),
+                    "upper": round(min(100, prediction + interval), 2),
                 }
             )
-    return pd.DataFrame(rows)
+
+        change_14d = slope * 14
+        outlook_rows.append(
+            {
+                "style": style,
+                "current_share": round(current_share, 2),
+                "recent_momentum": round(recent_momentum, 2),
+                "daily_slope": round(slope, 2),
+                "projected_7d": round(float(np.clip(current_share + slope * 7, 0, 100)), 2),
+                "projected_14d": round(float(np.clip(current_share + slope * 14, 0, 100)), 2),
+                "projected_21d": round(float(np.clip(current_share + slope * 21, 0, 100)), 2),
+                "volatility": round(volatility, 2),
+                "observed_14d_matches": int(group["prompt_count"].sum()),
+                "signal": forecast_direction(change_14d),
+            }
+        )
+
+    return observed, pd.DataFrame(forecast_rows), pd.DataFrame(outlook_rows)
 
 
 def clipboard_component(text):
@@ -853,35 +898,160 @@ def tab_strategy(style_period, works, styles):
         with cols[index]:
             st.image(str(BASE_DIR / row["image"]), caption=f'{row["style"]} | {row["model"]}')
 
-    show_section("Exploratory Forecast: Next 7 Days")
+    show_section("Exploratory Forecast: Multi-Horizon Style Signals")
     st.caption(
-        "Forecasts are exploratory and based on linear extrapolation of the short DiffusionDB collection window. "
-        "They are useful for demonstrating a method, not for long-term production forecasting."
+        "Forecasts use each style's daily share of tracked DiffusionDB matches, rather than raw volume. "
+        "Recent days receive more weight, uncertainty expands with the horizon, and projections remain exploratory "
+        "because the source window is short."
     )
-    forecast = predict_styles(style_period)
+
+    forecast_horizon = st.select_slider(
+        "Projection horizon",
+        options=[7, 14, 21],
+        value=14,
+        format_func=lambda value: f"{value} days",
+    )
+    observed, forecast, outlook = predict_styles(style_period, max_horizon=21)
+    default_forecast_styles = outlook.sort_values("current_share", ascending=False)["style"].head(5).tolist()
+    forecast_styles = st.multiselect(
+        "Compare forecast styles",
+        styles,
+        default=default_forecast_styles,
+    )
+    if not forecast_styles:
+        forecast_styles = default_forecast_styles
+    focus_style = st.selectbox("Uncertainty focus", forecast_styles)
+
     fig_forecast = go.Figure()
-    for style, group in forecast.groupby("style"):
+    style_colors = dict(zip(styles, px.colors.qualitative.Set3))
+    for style in forecast_styles:
+        actual_group = observed[observed["style"] == style].sort_values("period")
+        forecast_group = forecast[
+            (forecast["style"] == style) & (forecast["step"] <= forecast_horizon)
+        ].sort_values("period")
+        line_color = style_colors[style]
+
+        if style == focus_style:
+            band_periods = [actual_group["period"].iloc[-1]] + forecast_group["period"].tolist()
+            band_upper = [actual_group["trend_share"].iloc[-1]] + forecast_group["upper"].tolist()
+            band_lower = [actual_group["trend_share"].iloc[-1]] + forecast_group["lower"].tolist()
+            fig_forecast.add_trace(
+                go.Scatter(
+                    x=band_periods + band_periods[::-1],
+                    y=band_upper + band_lower[::-1],
+                    fill="toself",
+                    fillcolor="rgba(102,217,232,0.12)",
+                    line={"color": "rgba(255,255,255,0)"},
+                    name=f"{style} uncertainty",
+                    showlegend=False,
+                    hoverinfo="skip",
+                )
+            )
+
         fig_forecast.add_trace(
             go.Scatter(
-                x=group["period"],
-                y=group["prediction"],
+                x=actual_group["period"],
+                y=actual_group["trend_share"],
                 mode="lines+markers",
-                name=style,
+                name=f"{style} actual",
+                line={"color": line_color},
             )
         )
         fig_forecast.add_trace(
             go.Scatter(
-                x=list(group["period"]) + list(group["period"])[::-1],
-                y=list(group["upper"]) + list(group["lower"])[::-1],
-                fill="toself",
-                fillcolor="rgba(102,217,232,0.08)",
-                line={"color": "rgba(255,255,255,0)"},
-                name=f"{style} interval",
-                showlegend=False,
+                x=[actual_group["period"].iloc[-1]] + forecast_group["period"].tolist(),
+                y=[actual_group["trend_share"].iloc[-1]] + forecast_group["prediction"].tolist(),
+                mode="lines+markers",
+                name=f"{style} projected",
+                line={"color": line_color, "dash": "dash"},
             )
         )
-    fig_forecast.update_layout(title="Linear prediction with simple uncertainty interval")
+    fig_forecast.add_vline(
+        x=observed["period"].max().timestamp() * 1000,
+        line_dash="dot",
+        line_color="rgba(236,242,248,.45)",
+    )
+    fig_forecast.update_layout(
+        title=f"Actual trend share and {forecast_horizon}-day weighted projection",
+        yaxis_title="Share of tracked-style matches (%)",
+        hovermode="x unified",
+    )
     st.plotly_chart(plot_layout(fig_forecast, height=500), use_container_width=True)
+
+    horizon_column = f"projected_{forecast_horizon}d"
+    outlook["projected_change"] = (outlook[horizon_column] - outlook["current_share"]).round(2)
+    rising = outlook.sort_values("projected_change", ascending=False).iloc[0]
+    cooling = outlook.sort_values("projected_change").iloc[0]
+    st.info(
+        f"At the {forecast_horizon}-day horizon, {rising['style']} has the strongest projected gain "
+        f"({rising['projected_change']:+.2f} percentage points), while {cooling['style']} shows the strongest "
+        f"cooling signal ({cooling['projected_change']:+.2f} points)."
+    )
+
+    col_momentum, col_outlook = st.columns([1, 1.25])
+    with col_momentum:
+        fig_momentum = px.scatter(
+            outlook,
+            x="current_share",
+            y="recent_momentum",
+            size="observed_14d_matches",
+            color="signal",
+            hover_name="style",
+            hover_data=["daily_slope", "volatility", "projected_7d", "projected_14d", "projected_21d"],
+            title="Momentum map: current share vs. recent movement",
+            color_discrete_map={
+                "Accelerating": THEME["green"],
+                "Rising": THEME["cyan"],
+                "Stable": THEME["gold"],
+                "Cooling": THEME["rose"],
+                "Cooling quickly": "#ef6b6b",
+            },
+            size_max=48,
+        )
+        fig_momentum.add_hline(y=0, line_dash="dot", line_color="rgba(236,242,248,.45)")
+        fig_momentum.update_layout(
+            xaxis_title="Current share of tracked matches (%)",
+            yaxis_title="Recent 3-day momentum (percentage points)",
+        )
+        st.plotly_chart(plot_layout(fig_momentum, height=470), use_container_width=True)
+
+    with col_outlook:
+        outlook_table = (
+            outlook[
+                [
+                    "style",
+                    "current_share",
+                    "recent_momentum",
+                    "daily_slope",
+                    "projected_7d",
+                    "projected_14d",
+                    "projected_21d",
+                    "volatility",
+                    "signal",
+                ]
+            ]
+            .sort_values(horizon_column, ascending=False)
+            .rename(
+                columns={
+                    "style": "Style",
+                    "current_share": "Current share %",
+                    "recent_momentum": "Recent momentum pp",
+                    "daily_slope": "Daily slope pp",
+                    "projected_7d": "Projected 7d %",
+                    "projected_14d": "Projected 14d %",
+                    "projected_21d": "Projected 21d %",
+                    "volatility": "Volatility pp",
+                    "signal": "14d signal",
+                }
+            )
+        )
+        st.dataframe(outlook_table, width="stretch", hide_index=True, height=430)
+
+    st.caption(
+        "How to read this section: solid lines are observed shares; dashed lines are projections. "
+        "The shaded range is shown for the selected focus style only. The 7-, 14-, and 21-day values are scenario "
+        "checkpoints, not long-term market forecasts."
+    )
 
     st.warning(
         "Ethical note: disclose synthetic production when needed, avoid misleading realism, respect artist identity, "

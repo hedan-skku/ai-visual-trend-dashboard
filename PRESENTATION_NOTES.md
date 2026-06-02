@@ -30,14 +30,14 @@ Use the live hero metrics during the presentation. They dynamically identify the
 7. Open Creative Strategy and show Use Case Recommendation.
 8. Show Motion Preview and explain why motion is used only for cinematic/editorial/brand use cases.
 9. Open Real References and explain how official tool references support the dashboard categories.
-10. Show the next-7-days exploratory forecast and explain its short-window limitation.
+10. Show the 7-, 14-, and 21-day exploratory projections, momentum map, and comparison table. Explain why the uncertainty range expands at longer horizons.
 
 ## 6. Technical Stack
 
 - Streamlit for the dashboard
 - Pandas for CSV data processing
 - Plotly for interactive charts
-- NumPy / scikit-learn-compatible logic for linear forecasting
+- NumPy / scikit-learn-compatible logic for weighted multi-horizon forecasting
 - Local AI-generated image assets for representative visual evidence
 - Lightweight GIF previews for selected motion-relevant styles
 - Official reference links for real-world context
