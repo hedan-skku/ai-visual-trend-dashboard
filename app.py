@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import random
 
 import numpy as np
@@ -232,6 +233,19 @@ def safe_image(relative_path, **kwargs):
     return False
 
 
+def data_path(filename):
+    candidate_dirs = [DATA_DIR]
+    source_dir = os.environ.get("AI_VISUAL_DASHBOARD_SOURCE_DIR")
+    if source_dir:
+        candidate_dirs.append(Path(source_dir) / "data")
+
+    for directory in candidate_dirs:
+        path = directory / filename
+        if path.exists():
+            return path
+    return DATA_DIR / filename
+
+
 def friendly_error(message):
     st.error(message)
     st.stop()
@@ -240,14 +254,14 @@ def friendly_error(message):
 @st.cache_data(show_spinner=False)
 def load_data():
     try:
-        prompt_path = DATA_DIR / "prompt_trend_signals.csv"
-        tool_path = DATA_DIR / "tool_benchmarks.csv"
-        works_path = DATA_DIR / "representative_works.csv"
-        references_path = DATA_DIR / "real_world_references.csv"
-        summary_path = DATA_DIR / "dataset_summary.csv"
-        sampler_path = DATA_DIR / "sampler_distribution.csv"
-        aspect_path = DATA_DIR / "aspect_ratio_distribution.csv"
-        examples_path = DATA_DIR / "prompt_examples.csv"
+        prompt_path = data_path("prompt_trend_signals.csv")
+        tool_path = data_path("tool_benchmarks.csv")
+        works_path = data_path("representative_works.csv")
+        references_path = data_path("real_world_references.csv")
+        summary_path = data_path("dataset_summary.csv")
+        sampler_path = data_path("sampler_distribution.csv")
+        aspect_path = data_path("aspect_ratio_distribution.csv")
+        examples_path = data_path("prompt_examples.csv")
 
         prompts = pd.read_csv(prompt_path)
         tools = pd.read_csv(tool_path)
@@ -259,7 +273,8 @@ def load_data():
         examples = pd.read_csv(examples_path)
     except FileNotFoundError as exc:
         friendly_error(
-            f"Data file missing: {exc.filename}. Run scripts/build_real_data.py with the official DiffusionDB metadata table."
+            f"Data file missing: {exc.filename}. Restore the committed data/ CSV files or run "
+            "scripts/build_real_data.py with the official DiffusionDB metadata table."
         )
     except Exception as exc:
         friendly_error(f"Data loading failed: {exc}")
