@@ -127,6 +127,18 @@ def inject_css():
             display: block;
         }}
 
+        div[data-testid="stImage"] {{
+            width: 100%;
+        }}
+
+        div[data-testid="stImage"] img {{
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 6px;
+            display: block;
+            object-fit: cover;
+        }}
+
         .work-card-body {{
             padding: .9rem;
         }}
@@ -208,6 +220,16 @@ def inject_css():
 
 def show_section(title):
     st.markdown(f"### {title}")
+
+
+def safe_image(relative_path, **kwargs):
+    image_path = BASE_DIR / str(relative_path)
+    if image_path.exists():
+        st.image(str(image_path), **kwargs)
+        return True
+
+    st.warning(f"Image asset missing: {relative_path}")
+    return False
 
 
 def friendly_error(message):
@@ -387,7 +409,17 @@ def render_hero(prompts, latest_df, summary):
     classified_records = int(float(summary["classified_records"]))
     top_two = latest_df.sort_values("prompt_count", ascending=False).head(2)
     top_one = top_two.iloc[0]
-    runner_up = top_two.iloc[1] if len(top_two) > 1 else top_one
+    if len(top_two) > 1:
+        ranking_sentence = (
+            f"{top_one['style']} is the leading tracked style "
+            f"({int(top_one['prompt_count']):,} matched prompts), followed by {top_two.iloc[1]['style']} "
+            f"({int(top_two.iloc[1]['prompt_count']):,})."
+        )
+    else:
+        ranking_sentence = (
+            f"{top_one['style']} is the only selected tracked style in the current filter "
+            f"({int(top_one['prompt_count']):,} matched prompts)."
+        )
 
     st.caption("AI Visual Culture Research Dashboard")
     st.title("AI Visual Trend Dashboard")
@@ -403,9 +435,7 @@ def render_hero(prompts, latest_df, summary):
     metric_4.metric("Tracked Style Matches", f"{classified_records:,}", f"{prompts['style'].nunique()} documented rules")
 
     st.success(
-        f"Key insight from {max_period:%Y-%m-%d}: {top_one['style']} is the leading tracked style "
-        f"({int(top_one['prompt_count']):,} matched prompts), followed by {runner_up['style']} "
-        f"({int(runner_up['prompt_count']):,}). {fastest_style.name} has the largest first-to-last-day "
+        f"Key insight from {max_period:%Y-%m-%d}: {ranking_sentence} {fastest_style.name} has the largest first-to-last-day "
         f"change ({int(fastest_style['growth']):+,} matched prompts)."
     )
     st.info(
@@ -504,7 +534,10 @@ def render_drilldown(points, prompts, works):
     c1, c2 = st.columns([1, 1.1])
     with c1:
         if not work.empty:
-            st.image(str(BASE_DIR / work.iloc[0]["image"]), caption=f'{work.iloc[0]["style"]} | {work.iloc[0]["model"]}')
+            safe_image(
+                work.iloc[0]["image"],
+                caption=f'{work.iloc[0]["style"]} | {work.iloc[0]["model"]}',
+            )
     with c2:
         st.markdown("#### Drill-down details")
         st.dataframe(
@@ -589,7 +622,7 @@ def tab_trends(prompts, style_period, samplers, aspect_ratios, works, selected_s
 
 def render_work_card(row):
     with st.container(border=True):
-        st.image(str(BASE_DIR / row["image"]), width="stretch")
+        safe_image(row["image"], width="stretch")
         st.caption(f'{row["style"]} | {row["recommended_tool"]} | {row["model"]}')
         st.write(f'**{row["representative_work"]}**')
         st.caption(f'Visual evidence: {row["visual_evidence"]}')
@@ -834,7 +867,7 @@ def use_case_recommendation(works):
 
     c1, c2 = st.columns([1, 1.2])
     with c1:
-        st.image(str(BASE_DIR / work["image"]), caption=f"{rec['style']} | {rec['tool']}")
+        safe_image(work["image"], caption=f"{rec['style']} | {rec['tool']}")
     with c2:
         with st.container(border=True):
             st.write(f"**Recommended style:** {rec['style']}")
@@ -856,7 +889,7 @@ def motion_preview():
     cols = st.columns(3)
     for index, (title, image, caption) in enumerate(motion_assets):
         with cols[index]:
-            st.image(str(BASE_DIR / image), width="stretch")
+            safe_image(image, width="stretch")
             st.caption(f"{title}: {caption}")
 
 
@@ -896,7 +929,7 @@ def tab_strategy(style_period, works, styles):
     cols = st.columns(3)
     for index, row in preview.reset_index(drop=True).iterrows():
         with cols[index]:
-            st.image(str(BASE_DIR / row["image"]), caption=f'{row["style"]} | {row["model"]}')
+            safe_image(row["image"], caption=f'{row["style"]} | {row["model"]}')
 
     show_section("Exploratory Forecast: Multi-Horizon Style Signals")
     st.caption(
