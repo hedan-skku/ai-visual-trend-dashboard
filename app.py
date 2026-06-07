@@ -262,6 +262,10 @@ def load_data():
         sampler_path = data_path("sampler_distribution.csv")
         aspect_path = data_path("aspect_ratio_distribution.csv")
         examples_path = data_path("prompt_examples.csv")
+        source_coverage_path = data_path("source_coverage.csv")
+        ecosystem_path = data_path("current_ecosystem_signals.csv")
+        benchmark_prompts_path = data_path("controlled_benchmark_prompts.csv")
+        benchmark_rubric_path = data_path("benchmark_rubric.csv")
 
         prompts = pd.read_csv(prompt_path)
         tools = pd.read_csv(tool_path)
@@ -271,6 +275,10 @@ def load_data():
         samplers = pd.read_csv(sampler_path)
         aspect_ratios = pd.read_csv(aspect_path)
         examples = pd.read_csv(examples_path)
+        source_coverage = pd.read_csv(source_coverage_path)
+        ecosystem = pd.read_csv(ecosystem_path)
+        benchmark_prompts = pd.read_csv(benchmark_prompts_path)
+        benchmark_rubric = pd.read_csv(benchmark_rubric_path)
     except FileNotFoundError as exc:
         friendly_error(
             f"Data file missing: {exc.filename}. Restore the committed data/ CSV files or run "
@@ -328,7 +336,22 @@ def load_data():
     )
 
     summary_values = dict(zip(summary["metric"], summary["value"]))
-    return prompts, style_period, tools, keywords, samplers, aspect_ratios, works, references, summary_values, examples
+    return (
+        prompts,
+        style_period,
+        tools,
+        keywords,
+        samplers,
+        aspect_ratios,
+        works,
+        references,
+        summary_values,
+        examples,
+        source_coverage,
+        ecosystem,
+        benchmark_prompts,
+        benchmark_rubric,
+    )
 
 
 def plot_layout(fig, height=430):
@@ -381,6 +404,15 @@ def render_sidebar(styles, tools, periods):
             ["text_to_image", "image_editing", "image_to_video", "public_trend_gallery", "open_local_customization"],
             format_func=lambda item: item.replace("_", " ").title(),
         )
+        evidence_lens = st.selectbox(
+            "Evidence lens",
+            [
+                "Historical baseline",
+                "Current ecosystem",
+                "Multi-source evidence",
+                "Controlled benchmark protocol",
+            ],
+        )
 
         st.markdown("### Data Source")
         st.markdown(
@@ -390,8 +422,8 @@ def render_sidebar(styles, tools, periods):
             "[DiffusionDB research paper](https://arxiv.org/abs/2210.14896)"
         )
         st.caption(
-            "Current CSVs are derived from the official DiffusionDB 2M metadata table. "
-            "The source contains real user-specified Stable Diffusion prompts and hyperparameters."
+            "The quantitative baseline is derived from the official DiffusionDB 2M metadata table. "
+            "New evidence layers document source coverage, current ecosystem signals, and a controlled benchmark protocol."
         )
         st.caption(
             "Cleaning: valid timestamps only; image_nsfw < 0.1; prompt_nsfw < 0.1; "
@@ -404,7 +436,7 @@ def render_sidebar(styles, tools, periods):
     if not selected_styles:
         selected_styles = styles
 
-    return selected_styles, selected_period, selected_tool, benchmark_focus
+    return selected_styles, selected_period, selected_tool, benchmark_focus, evidence_lens
 
 
 def render_hero(prompts, latest_df, summary):
@@ -511,6 +543,31 @@ def render_toolchain_snapshot():
                 st.write(f"**{item['stage']}**")
                 st.caption(item["tools"])
                 st.caption(item["why"])
+
+
+def render_evidence_model_snapshot(source_coverage, ecosystem):
+    show_section("Evidence Model Snapshot")
+    st.caption(
+        "DiffusionDB gives the project a real historical baseline. These additional evidence layers explain how the "
+        "dashboard handles newer tools, platform shifts, and benchmark planning without pretending every source is the same kind of data."
+    )
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        with st.container(border=True):
+            st.write("**Historical Baseline**")
+            st.caption("Real DiffusionDB prompt metadata anchors the quantitative trend charts and keyword analysis.")
+    with c2:
+        with st.container(border=True):
+            st.write("**Current Ecosystem Layer**")
+            st.caption(
+                f"{len(ecosystem)} newer signals from official docs, open corpora, dataset catalogs, and community APIs add present-day context."
+            )
+    with c3:
+        with st.container(border=True):
+            st.write("**Source Coverage Model**")
+            st.caption(
+                f"{len(source_coverage)} source types are separated by role, strength, limitation, and confidence weight."
+            )
 
 
 def selected_points(event):
@@ -633,6 +690,313 @@ def tab_trends(prompts, style_period, samplers, aspect_ratios, works, selected_s
         color_discrete_sequence=px.colors.qualitative.Set2,
     )
     col_ratio.plotly_chart(plot_layout(fig_ratio, height=430), use_container_width=True)
+
+
+def build_confidence_table(prompts, ecosystem):
+    totals = prompts.groupby("style", as_index=False)["prompt_count"].sum()
+    signal_weights = (
+        ecosystem.groupby("related_style", as_index=False)
+        .agg(current_signal_weight=("weight", "max"), source_count=("source", "nunique"))
+        .rename(columns={"related_style": "style"})
+    )
+    confidence = totals.merge(signal_weights, on="style", how="left").fillna(
+        {"current_signal_weight": 0, "source_count": 0}
+    )
+    confidence["source_count"] = confidence["source_count"].astype(int) + 1
+    confidence["evidence_score"] = (
+        42
+        + np.log10(confidence["prompt_count"].clip(lower=1)) * 8
+        + confidence["current_signal_weight"] * 7
+        + confidence["source_count"].clip(upper=4) * 3
+    ).clip(0, 100).round(0)
+    confidence["confidence_label"] = np.select(
+        [
+            confidence["evidence_score"] >= 82,
+            confidence["evidence_score"] >= 68,
+        ],
+        ["High", "Medium"],
+        default="Exploratory",
+    )
+    confidence["interpretation"] = np.where(
+        confidence["current_signal_weight"] > 0,
+        "DiffusionDB baseline plus current ecosystem evidence",
+        "DiffusionDB baseline only; needs newer source validation",
+    )
+    return confidence.sort_values("evidence_score", ascending=False)
+
+
+def render_trend_confidence(prompts, ecosystem, selected_styles):
+    show_section("Trend Confidence Score")
+    st.caption(
+        "This is an evidence-confidence score, not a statistical truth score. It combines DiffusionDB prompt volume "
+        "with whether a style has additional current ecosystem evidence from official docs, open prompt corpora, "
+        "dataset catalogs, or community APIs."
+    )
+    confidence = build_confidence_table(prompts, ecosystem)
+    confidence = confidence[confidence["style"].isin(selected_styles)]
+    col_chart, col_table = st.columns([1.05, 1.35])
+    with col_chart:
+        fig = px.bar(
+            confidence.sort_values("evidence_score"),
+            x="evidence_score",
+            y="style",
+            color="confidence_label",
+            orientation="h",
+            title="Evidence confidence by selected style",
+            color_discrete_map={"High": THEME["green"], "Medium": THEME["gold"], "Exploratory": THEME["rose"]},
+        )
+        st.plotly_chart(plot_layout(fig, height=430), use_container_width=True)
+    with col_table:
+        st.dataframe(
+            confidence[
+                [
+                    "style",
+                    "prompt_count",
+                    "source_count",
+                    "current_signal_weight",
+                    "evidence_score",
+                    "confidence_label",
+                    "interpretation",
+                ]
+            ].rename(
+                columns={
+                    "style": "Style",
+                    "prompt_count": "DiffusionDB matches",
+                    "source_count": "Evidence layers",
+                    "current_signal_weight": "Current-signal weight",
+                    "evidence_score": "Score",
+                    "confidence_label": "Label",
+                    "interpretation": "Interpretation",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+            height=390,
+        )
+
+
+def tab_evidence_coverage(source_coverage, ecosystem, benchmark_prompts, benchmark_rubric, evidence_lens):
+    show_section("Data Coverage & Source Reliability")
+    st.caption(
+        "This page turns DiffusionDB's limitation into a research design: DiffusionDB remains the quantitative "
+        "historical baseline, while newer sources are treated as evidence layers until they are normalized and validated."
+    )
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("Evidence Layers", f"{len(source_coverage)}")
+    c2.metric("Current Signals", f"{len(ecosystem)}")
+    c3.metric("Benchmark Prompts", f"{len(benchmark_prompts)}")
+    c4.metric("Rubric Dimensions", f"{len(benchmark_rubric)}")
+
+    lens_guidance = {
+        "Historical baseline": (
+            "This lens keeps the strongest claim narrow: DiffusionDB provides real prompt-volume evidence for the "
+            "historical 2022 source window."
+        ),
+        "Current ecosystem": (
+            "This lens adds present-day context from official product documentation, open prompt corpora, public dataset "
+            "indexes, and community APIs."
+        ),
+        "Multi-source evidence": (
+            "This lens compares all evidence layers side by side so the audience can see which claims are quantitative, "
+            "which are contextual, and which are planned for future validation."
+        ),
+        "Controlled benchmark protocol": (
+            "This lens prepares a fair future comparison: each tool receives the same prompts, and results are scored "
+            "with the same rubric before any winner is claimed."
+        ),
+    }
+    st.info(f"Current lens: {evidence_lens}. {lens_guidance[evidence_lens]}")
+
+    show_section("Selected Evidence Lens")
+    if evidence_lens == "Historical baseline":
+        lens_view = source_coverage[source_coverage["evidence_layer"].eq("Historical baseline")]
+        st.dataframe(
+            lens_view[["source", "data_type", "time_window", "scale", "strength", "limitation"]].rename(
+                columns={
+                    "source": "Source",
+                    "data_type": "Data type",
+                    "time_window": "Time window",
+                    "scale": "Scale",
+                    "strength": "Strength",
+                    "limitation": "Limitation",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+        )
+    elif evidence_lens == "Current ecosystem":
+        st.dataframe(
+            ecosystem[["signal", "related_style", "source", "evidence_type", "confidence_label", "what_it_adds"]].rename(
+                columns={
+                    "signal": "Signal",
+                    "related_style": "Related style",
+                    "source": "Source",
+                    "evidence_type": "Evidence type",
+                    "confidence_label": "Confidence",
+                    "what_it_adds": "What it adds",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+            height=300,
+        )
+    elif evidence_lens == "Controlled benchmark protocol":
+        st.dataframe(
+            benchmark_prompts[["task_id", "creative_task", "primary_style", "evaluation_focus", "target_tools"]].rename(
+                columns={
+                    "task_id": "ID",
+                    "creative_task": "Creative task",
+                    "primary_style": "Style",
+                    "evaluation_focus": "Evaluation focus",
+                    "target_tools": "Target tools",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+            height=300,
+        )
+    else:
+        st.dataframe(
+            source_coverage[["source", "evidence_layer", "data_type", "confidence_weight", "limitation"]].rename(
+                columns={
+                    "source": "Source",
+                    "evidence_layer": "Evidence layer",
+                    "data_type": "Data type",
+                    "confidence_weight": "Weight",
+                    "limitation": "Limitation",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+            height=300,
+        )
+
+    fig = px.bar(
+        source_coverage.sort_values("confidence_weight"),
+        x="confidence_weight",
+        y="source",
+        color="evidence_layer",
+        orientation="h",
+        title="Source reliability and role in the evidence model",
+        hover_data=["strength", "limitation"],
+        color_discrete_sequence=px.colors.qualitative.Set2,
+    )
+    st.plotly_chart(plot_layout(fig, height=470), use_container_width=True)
+
+    show_section("Source Coverage Matrix")
+    st.dataframe(
+        source_coverage[
+            [
+                "source",
+                "evidence_layer",
+                "data_type",
+                "time_window",
+                "scale",
+                "platform_scope",
+                "strength",
+                "limitation",
+                "confidence_weight",
+            ]
+        ].rename(
+            columns={
+                "source": "Source",
+                "evidence_layer": "Evidence layer",
+                "data_type": "Data type",
+                "time_window": "Time window",
+                "scale": "Scale",
+                "platform_scope": "Platform scope",
+                "strength": "Strength",
+                "limitation": "Limitation",
+                "confidence_weight": "Weight",
+            }
+        ),
+        width="stretch",
+        hide_index=True,
+        height=430,
+    )
+
+    show_section("Current Ecosystem Signals")
+    col_signal, col_signal_table = st.columns([1, 1.35])
+    with col_signal:
+        fig_signal = px.scatter(
+            ecosystem,
+            x="weight",
+            y="related_style",
+            color="confidence_label",
+            size="weight",
+            hover_name="signal",
+            title="Signals that extend beyond DiffusionDB",
+            color_discrete_map={"High": THEME["green"], "Medium-High": THEME["cyan"], "Medium": THEME["gold"]},
+            size_max=34,
+        )
+        st.plotly_chart(plot_layout(fig_signal, height=460), use_container_width=True)
+    with col_signal_table:
+        st.dataframe(
+            ecosystem[["signal", "related_style", "source", "evidence_type", "confidence_label", "what_it_adds", "limitation"]]
+            .rename(
+                columns={
+                    "signal": "Signal",
+                    "related_style": "Related style",
+                    "source": "Source",
+                    "evidence_type": "Evidence type",
+                    "confidence_label": "Confidence",
+                    "what_it_adds": "What it adds",
+                    "limitation": "Limitation",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+            height=430,
+        )
+
+    show_section("Controlled AI Tool Benchmark Protocol")
+    st.caption(
+        "This protocol is ready for a future empirical test. It is not displayed as completed model scoring yet, "
+        "because the project should not claim tool winners before every tool is tested on the same prompts."
+    )
+    benchmark_filter = st.selectbox(
+        "Benchmark task filter",
+        ["All tasks"] + sorted(benchmark_prompts["creative_task"].unique().tolist()),
+        key="benchmark_task_filter",
+    )
+    benchmark_view = (
+        benchmark_prompts
+        if benchmark_filter == "All tasks"
+        else benchmark_prompts[benchmark_prompts["creative_task"] == benchmark_filter]
+    )
+    st.dataframe(
+        benchmark_view[["task_id", "creative_task", "primary_style", "evaluation_focus", "prompt", "target_tools", "status"]]
+        .rename(
+            columns={
+                "task_id": "ID",
+                "creative_task": "Creative task",
+                "primary_style": "Style",
+                "evaluation_focus": "Evaluation focus",
+                "prompt": "Prompt",
+                "target_tools": "Target tools",
+                "status": "Status",
+            }
+        ),
+        width="stretch",
+        hide_index=True,
+        height=390,
+    )
+
+    show_section("Benchmark Scoring Rubric")
+    st.dataframe(
+        benchmark_rubric.rename(
+            columns={
+                "dimension": "Dimension",
+                "score_anchor_1": "Score 1",
+                "score_anchor_3": "Score 3",
+                "score_anchor_5": "Score 5",
+                "why_it_matters": "Why it matters",
+            }
+        ),
+        width="stretch",
+        hide_index=True,
+    )
 
 
 def render_work_card(row):
@@ -1149,20 +1513,36 @@ def render_data_notes(prompts, summary):
             st.write("**Interpretation Boundary**")
             st.caption(
                 f"{float(summary['classification_coverage']):.2f}% of safety-filtered prompts match a tracked style. "
-                "The dashboard reports a transparent analytical lens, not a complete ontology."
+                "The dashboard reports a transparent analytical lens, not a complete ontology. The Evidence Coverage page "
+                "adds newer source context without mixing it into the historical DiffusionDB counts."
             )
 
 
 def main():
     inject_css()
     with st.spinner("Loading trends..."):
-        prompts, style_period, tools, keywords, samplers, aspect_ratios, works, references, summary, examples = load_data()
+        (
+            prompts,
+            style_period,
+            tools,
+            keywords,
+            samplers,
+            aspect_ratios,
+            works,
+            references,
+            summary,
+            examples,
+            source_coverage,
+            ecosystem,
+            benchmark_prompts,
+            benchmark_rubric,
+        ) = load_data()
 
     styles = sorted(prompts["style"].unique().tolist())
     tool_names = tools["tool"].tolist()
     periods = sorted(prompts["period"].dt.strftime("%Y-%m-%d").unique().tolist())
 
-    selected_styles, selected_period, selected_tool, benchmark_focus = render_sidebar(
+    selected_styles, selected_period, selected_tool, benchmark_focus, evidence_lens = render_sidebar(
         styles,
         tool_names,
         periods,
@@ -1177,6 +1557,7 @@ def main():
 
     render_hero(prompts, filtered_latest, summary)
     render_toolchain_snapshot()
+    render_evidence_model_snapshot(source_coverage, ecosystem)
 
     if len(selected_styles) == 1:
         st.success(
@@ -1192,6 +1573,7 @@ def main():
         "Tool Benchmarks",
         "Prompt Language",
         "Creative Strategy",
+        "Evidence Coverage",
         "Real References",
     ]
     if "active_page" not in st.session_state:
@@ -1208,6 +1590,7 @@ def main():
     if active_page == "Trend Analytics":
         with st.spinner("Rendering trend analytics..."):
             tab_trends(prompts, style_period, samplers, aspect_ratios, works, selected_styles, selected_period)
+            render_trend_confidence(prompts, ecosystem, selected_styles)
     elif active_page == "Representative Works":
         tab_gallery(works, styles)
     elif active_page == "Tool Benchmarks":
@@ -1216,6 +1599,8 @@ def main():
         tab_keywords(keywords, selected_styles)
     elif active_page == "Creative Strategy":
         tab_strategy(style_period, works, styles)
+    elif active_page == "Evidence Coverage":
+        tab_evidence_coverage(source_coverage, ecosystem, benchmark_prompts, benchmark_rubric, evidence_lens)
     elif active_page == "Real References":
         tab_references(references)
 
@@ -1223,7 +1608,7 @@ def main():
 
     st.caption(
         "Built by HEDAN | Real prompt statistics derived from DiffusionDB CC0 metadata | "
-        "Streamlit, Plotly, Pandas, and illustrative local AI-generated concept visuals"
+        "Multi-source evidence layers, Streamlit, Plotly, Pandas, and illustrative local AI-generated concept visuals"
     )
 
 

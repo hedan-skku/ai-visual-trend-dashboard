@@ -1,12 +1,14 @@
 # AI Visual Trend Dashboard
 
-An interactive Streamlit dashboard for exploring AI-generated visual culture through real DiffusionDB prompt statistics, factual tool capability references, illustrative representative works, keyword signals, and short-horizon exploratory forecasts.
+An interactive Streamlit dashboard for exploring AI-generated visual culture through real DiffusionDB prompt statistics, multi-source evidence layers, factual tool capability references, illustrative representative works, keyword signals, and short-horizon exploratory forecasts.
 
 ## Key Insight
 
 The dashboard reports style signals found in the official DiffusionDB 2M metadata table. Tracked styles are assigned with documented keyword rules, so the results are transparent and reproducible rather than presented as a universal ranking of AI art.
 
-The website connects real prompt counts, keyword growth, sampler metadata, aspect-ratio distribution, illustrative concept images, official tool capability references, and exploratory multi-horizon trend forecasts.
+Because DiffusionDB has a short August 2022 source window, the final version adds an Evidence Coverage model: current ecosystem signals, source reliability notes, and a controlled benchmark protocol are displayed separately from the historical prompt counts.
+
+The website connects real prompt counts, keyword growth, sampler metadata, aspect-ratio distribution, illustrative concept images, official tool capability references, trend-confidence scoring, evidence coverage, and exploratory multi-horizon trend forecasts.
 
 ## Live Demo
 
@@ -64,6 +66,10 @@ Current project data lives in:
 - `data/tool_benchmarks.csv`
 - `data/representative_works.csv`
 - `data/real_world_references.csv`
+- `data/source_coverage.csv`
+- `data/current_ecosystem_signals.csv`
+- `data/controlled_benchmark_prompts.csv`
+- `data/benchmark_rubric.csv`
 
 The statistics are derived from the official [DiffusionDB dataset](https://huggingface.co/datasets/poloclub/diffusiondb), a CC0 dataset of real Stable Diffusion Discord generations. The dashboard uses the official 2M-row text-only `metadata.parquet` table.
 
@@ -72,6 +78,13 @@ Source references:
 - [DiffusionDB dataset card](https://huggingface.co/datasets/poloclub/diffusiondb)
 - [DiffusionDB paper](https://arxiv.org/abs/2210.14896)
 - [DiffusionDB GitHub repository](https://github.com/poloclub/diffusiondb)
+- [Krea Open Prompts](https://github.com/krea-ai/open-prompts)
+- [Hugging Face text-to-image dataset catalog](https://huggingface.co/datasets?sort=likes&task_categories=task_categories%3Atext-to-image)
+- [Civitai REST API reference](https://github.com/civitai/civitai/wiki/REST-API-Reference)
+- [Midjourney Video documentation](https://docs.midjourney.com/docs/en/video)
+- [Runway Image-to-Video guide](https://help.runwayml.com/hc/en-us/articles/48324313115155-Image-to-Video-Prompting-Guide)
+- [Adobe Firefly product page](https://www.adobe.com/products/firefly.html)
+- [AIS-4SD Zenodo dataset](https://zenodo.org/records/15131117)
 
 Data cleaning and aggregation:
 
@@ -94,6 +107,13 @@ Source time window: 2022-08-06 to 2022-08-20 UTC
 ```
 
 The tracked-style coverage is intentionally partial. Prompts without an explicit rule match remain part of the analyzed source population but are not forced into a style category.
+
+The newer evidence files do not overwrite DiffusionDB counts. They document what each extra source can and cannot prove:
+
+- `source_coverage.csv` separates historical baseline, expanded prompt corpus, dataset discovery, current ecosystem signal, capability evidence, and controlled benchmark layers.
+- `current_ecosystem_signals.csv` records newer signals such as image-to-video workflows, commercial generative production, open prompt corpus expansion, and community model/tag APIs.
+- `controlled_benchmark_prompts.csv` defines 24 reusable prompts for a future fair cross-tool experiment.
+- `benchmark_rubric.csv` defines how outputs should be scored before any empirical tool ranking is claimed.
 
 ## Rebuild The Real Data
 
@@ -118,12 +138,15 @@ python3 scripts/build_real_data.py \
 - Sidebar filters for style, UTC date, tool, and capability focus
 - Random exploration button for live demos
 - Homepage AI Toolchain Snapshot showing where each tool fits in the production workflow
+- Homepage Evidence Model Snapshot explaining how DiffusionDB limitations are handled
 - Plotly chart selection with click drill-down
+- Trend Confidence Score combining historical prompt volume with current evidence layers
 - Factual AI tool capability matrix with official source links and no invented 0-100 quality scores
 - Real sampler and aspect-ratio metadata charts
 - Representative AI-generated concept gallery using local illustrative assets and visual evidence captions
 - Use Case Recommendation for brand campaigns, game concepts, social visuals, short film moodboards, and product renders
 - Motion Preview GIFs for cinematic, editorial, and luxury use cases
+- Evidence Coverage page with source reliability matrix, current ecosystem signals, and controlled benchmark protocol
 - Real-World References page with official tool links and trend evidence notes
 - Stable prompt text area for copying generated creative directions
 - Moodboard preview based on selected visual styles
@@ -175,9 +198,10 @@ Record a 1-2 minute Loom or OBS video:
 4. Open Representative Works and explain that the local images are illustrative concept assets.
 5. Use Random Explore.
 6. Show Use Case Recommendation and Motion Preview.
-7. Open Real References to show official research links.
-8. Copy a creative direction prompt.
-9. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
+7. Open Evidence Coverage and switch the evidence lens to explain why the project is no longer limited to a single DiffusionDB reading.
+8. Open Real References to show official research links.
+9. Copy a creative direction prompt.
+10. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
 
 ## Suggested Presentation Insight
 

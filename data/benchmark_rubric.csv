@@ -1,0 +1,7 @@
+dimension,score_anchor_1,score_anchor_3,score_anchor_5,why_it_matters
+Prompt faithfulness,Major subject or constraints ignored,Main subject correct but several details missing,Subject constraints style and context are all clearly represented,Measures whether the tool follows the same prompt reliably
+Visual quality,Obvious artifacts low detail or weak composition,Usable image with some artifacts or generic styling,Polished composition strong lighting and coherent detail,Measures output usefulness for presentation or production
+Style clarity,Requested style is unclear or contradicted,Style appears but could be stronger or mixed,Style is immediately recognizable and visually specific,Connects benchmark results to dashboard trend categories
+Commercial usability,Hard to use in campaign or design context,Could work after editing or cropping,Ready for moodboard pitch or campaign concept use,Measures real creative workflow value
+Control and consistency,Multiple objects/frames inconsistent or confusing,Acceptable consistency with some drift,Strong object identity spatial logic and continuity,Important for product renders storyboards and brand systems
+Ethical safety,Creates risky misleading or identity-sensitive output,Mostly safe but needs disclosure or cleanup,Responsible fictional transparent and non-deceptive result,Supports ethical reflection and presentation credibility
