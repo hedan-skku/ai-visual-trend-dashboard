@@ -1,10 +1,12 @@
 # AI Visual Trend Dashboard
 
-An interactive Streamlit dashboard for exploring AI-generated visual culture through real DiffusionDB prompt statistics, multi-source evidence layers, factual tool capability references, illustrative representative works, keyword signals, and short-horizon exploratory forecasts.
+An interactive Streamlit dashboard for exploring AI-generated visual culture through creative style discovery, representative visual examples, real DiffusionDB prompt statistics, multi-source evidence layers, factual tool capability references, keyword signals, and short-horizon exploratory forecasts.
 
 ## Key Insight
 
 The dashboard reports style signals found in the official DiffusionDB 2M metadata table. Tracked styles are assigned with documented keyword rules, so the results are transparent and reproducible rather than presented as a universal ranking of AI art.
+
+The homepage is designed as a creative exploration experience first: users can pick a visual style, generate a creative direction starter, compare two style languages, and inspect representative concept images before going deeper into charts and evidence.
 
 Because DiffusionDB has a short August 2022 source window, the final version adds an Evidence Coverage model: current ecosystem signals, source reliability notes, and a controlled benchmark protocol are displayed separately from the historical prompt counts.
 
@@ -137,6 +139,9 @@ python3 scripts/build_real_data.py \
 - Cached CSV data loading with `st.cache_data`
 - Sidebar filters for style, UTC date, tool, and capability focus
 - Random exploration button for live demos
+- Homepage Visual Trend Playground for style discovery and creative direction starters
+- Style Duel for side-by-side comparison of two visual languages
+- Visual Highlights preview with representative concept images
 - Homepage AI Toolchain Snapshot showing where each tool fits in the production workflow
 - Homepage Evidence Model Snapshot explaining how DiffusionDB limitations are handled
 - Plotly chart selection with click drill-down
@@ -193,15 +198,16 @@ For Streamlit Cloud:
 Record a 1-2 minute Loom or OBS video:
 
 1. Show the dashboard hero metrics and data volume.
-2. Use the sidebar filters.
-3. Click a trend chart point to show drill-down details.
-4. Open Representative Works and explain that the local images are illustrative concept assets.
-5. Use Random Explore.
-6. Show Use Case Recommendation and Motion Preview.
-7. Open Evidence Coverage and switch the evidence lens to explain why the project is no longer limited to a single DiffusionDB reading.
-8. Open Real References to show official research links.
-9. Copy a creative direction prompt.
-10. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
+2. Use Explore a Visual Trend to generate a creative direction starter.
+3. Compare two styles in Style Duel.
+4. Use the sidebar filters.
+5. Click a trend chart point to show drill-down details.
+6. Open Representative Works and explain that the local images are illustrative concept assets.
+7. Use Random Explore.
+8. Show Use Case Recommendation and Motion Preview.
+9. Open Evidence Coverage and switch the evidence lens to explain why the project is no longer limited to a single DiffusionDB reading.
+10. Open Real References to show official research links.
+11. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
 
 ## Suggested Presentation Insight
 

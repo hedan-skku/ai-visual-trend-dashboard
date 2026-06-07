@@ -1,7 +1,7 @@
 # AI Visual Trend Dashboard Speaker Notes
 
 ## Slide 1: Title
-Introduce the project as a Streamlit web dashboard that analyzes AI-generated visual culture through prompt trends, tool benchmarks, representative works, and creative strategy.
+Introduce the project as a Streamlit web dashboard that turns AI-generated visual culture into a creative exploration experience supported by real prompt trends, tool benchmarks, representative works, and evidence notes.
 
 ## Slide 2: 5W1H Framework
 Explain the PRD foundation: why the project exists, who it serves, what it includes, when users would use it, where it runs, and how it was built.
@@ -16,10 +16,10 @@ Show how the website answers the PRD requirements: data credibility, interaction
 Map each core PRD feature to the actual website module: trend analysis, tool comparison, keyword dashboard, interactive filters, and dashboard metrics.
 
 ## Slide 6: Website Architecture
-Walk through the website structure: Home, Trend Analytics, Representative Works, Tool Benchmarks, Keyword Insights, Creative Strategy, Evidence Coverage, and Real References.
+Walk through the website structure: Home creative exploration, Trend Analytics, Representative Works, Tool Benchmarks, Keyword Insights, Creative Strategy, Evidence Coverage, and Real References.
 
 ## Slide 7: UI Design Direction
-Explain the dark UI, neon accents, sidebar navigation, responsive layout, and AI-themed visual language.
+Explain the dark UI, neon accents, sidebar navigation, responsive layout, and AI-themed visual language. Emphasize that the homepage now feels more like an exploration tool: users can generate a creative direction starter, view representative images, and compare two style languages before reading research details.
 
 ## Slide 8: Data Foundation
 Clarify the real dataset pipeline. The dashboard starts with the official DiffusionDB 2M metadata table, keeps 981,354 prompt records after documented safety filters, and assigns 263,472 tracked-style prompt matches with transparent rules. Then explain the limitation: DiffusionDB is a short 2022 historical window, so the final dashboard adds separate evidence layers for current ecosystem signals, source coverage, and future controlled benchmark testing.

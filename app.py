@@ -1,4 +1,5 @@
 from pathlib import Path
+from html import escape
 import os
 import random
 
@@ -471,8 +472,8 @@ def render_hero(prompts, latest_df, summary):
     st.caption("AI Visual Culture Research Dashboard")
     st.title("AI Visual Trend Dashboard")
     st.write(
-        "Explore real Stable Diffusion prompt signals, visual styles, tool capabilities, "
-        "representative concept images, and short-horizon creative directions."
+        "Pick a visual style, inspect what makes it recognizable, compare creative tools, and turn trend signals "
+        "into campaign, film, fashion, product, and storytelling ideas."
     )
 
     metric_1, metric_2, metric_3, metric_4 = st.columns(4)
@@ -485,28 +486,29 @@ def render_hero(prompts, latest_df, summary):
         f"Key insight from {max_period:%Y-%m-%d}: {ranking_sentence} {fastest_style.name} has the largest first-to-last-day "
         f"change ({int(fastest_style['growth']):+,} matched prompts)."
     )
-    st.info(
-        f"Data credibility note: statistics are derived from the official DiffusionDB 2M metadata table "
-        f"({min_period:%Y-%m-%d} to {max_period:%Y-%m-%d} UTC). Safety filtering and tracked-style "
-        "classification rules are documented in scripts/build_real_data.py."
-    )
+    with st.expander("Data credibility note", expanded=False):
+        st.write(
+            f"Statistics are derived from the official DiffusionDB 2M metadata table "
+            f"({min_period:%Y-%m-%d} to {max_period:%Y-%m-%d} UTC). Safety filtering and tracked-style "
+            "classification rules are documented in scripts/build_real_data.py."
+        )
 
 
 def render_snapshot():
-    show_section("Research Snapshot")
+    show_section("What You Can Do Here")
     c1, c2, c3 = st.columns(3)
     with c1:
         with st.container(border=True):
-            st.write("**What is measured?**")
-            st.caption("Real DiffusionDB prompts are safety-filtered, classified with documented keyword rules, and aggregated by UTC date.")
+            st.write("**Discover the look**")
+            st.caption("Use style cards, images, keywords, and motion previews to quickly understand what each AI visual trend feels like.")
     with c2:
         with st.container(border=True):
-            st.write("**What is not claimed?**")
-            st.caption("The tracked styles are a transparent analytical lens, not a universal ranking of every AI-generated image.")
+            st.write("**Build creative direction**")
+            st.caption("Turn a trend into a practical prompt starter for campaigns, film moodboards, product renders, or social visuals.")
     with c3:
         with st.container(border=True):
-            st.write("**What makes this unique?**")
-            st.caption("The dashboard connects real prompt signals to concept images, factual tool capabilities, parameters, and forecasts.")
+            st.write("**Check the evidence**")
+            st.caption("When you need rigor, open the trend charts, confidence score, source coverage page, and official references.")
 
 
 def render_toolchain_snapshot():
@@ -546,28 +548,208 @@ def render_toolchain_snapshot():
 
 
 def render_evidence_model_snapshot(source_coverage, ecosystem):
-    show_section("Evidence Model Snapshot")
+    show_section("Behind the Trend Signals")
     st.caption(
-        "DiffusionDB gives the project a real historical baseline. These additional evidence layers explain how the "
-        "dashboard handles newer tools, platform shifts, and benchmark planning without pretending every source is the same kind of data."
+        "A quick reliability snapshot. The full research explanation lives in the Evidence Coverage page."
     )
     c1, c2, c3 = st.columns(3)
     with c1:
         with st.container(border=True):
-            st.write("**Historical Baseline**")
-            st.caption("Real DiffusionDB prompt metadata anchors the quantitative trend charts and keyword analysis.")
+            st.write("**Real prompt baseline**")
+            st.caption("DiffusionDB anchors the charts with real prompt metadata.")
     with c2:
         with st.container(border=True):
-            st.write("**Current Ecosystem Layer**")
+            st.write("**Current signals**")
             st.caption(
-                f"{len(ecosystem)} newer signals from official docs, open corpora, dataset catalogs, and community APIs add present-day context."
+                f"{len(ecosystem)} newer signals add context from tools, datasets, and AI communities."
             )
     with c3:
         with st.container(border=True):
-            st.write("**Source Coverage Model**")
+            st.write("**Fair comparison plan**")
             st.caption(
-                f"{len(source_coverage)} source types are separated by role, strength, limitation, and confidence weight."
+                f"{len(source_coverage)} source layers are separated so evidence stays honest."
             )
+
+
+def style_profile(style):
+    profiles = {
+        "Cyberpunk": {
+            "mood": "Electric, urban, nocturnal",
+            "best_for": "music visuals, tech campaigns, sci-fi posters",
+            "creative_hook": "Use reflections, rain, signage, and layered city depth.",
+        },
+        "Anime": {
+            "mood": "Emotional, expressive, character-led",
+            "best_for": "key visuals, youth campaigns, character storytelling",
+            "creative_hook": "Use expressive silhouettes, color contrast, and dramatic backlight.",
+        },
+        "3D Render": {
+            "mood": "Polished, material-focused, commercial",
+            "best_for": "product launches, spatial branding, object studies",
+            "creative_hook": "Use clean geometry, studio light, glass, metal, and precise framing.",
+        },
+        "Retro Futurism": {
+            "mood": "Nostalgic, optimistic, speculative",
+            "best_for": "worldbuilding, editorial sets, concept interiors",
+            "creative_hook": "Mix chrome, analog interfaces, warm light, and future nostalgia.",
+        },
+        "Minimalism": {
+            "mood": "Quiet, refined, spacious",
+            "best_for": "brand identity, design systems, premium layouts",
+            "creative_hook": "Use negative space, restrained color, clean typography, and calm rhythm.",
+        },
+        "Dark Fantasy": {
+            "mood": "Mystic, cinematic, dramatic",
+            "best_for": "game worlds, book covers, atmospheric storytelling",
+            "creative_hook": "Use fog, ritual silhouettes, shadow, and a clear magical focal point.",
+        },
+        "Documentary Realism": {
+            "mood": "Believable, grounded, observational",
+            "best_for": "editorial storytelling, social issue visuals, realistic concept scenes",
+            "creative_hook": "Use natural light, human scale, small details, and subtle grain.",
+        },
+        "Surreal Editorial": {
+            "mood": "Dreamlike, high-fashion, impossible",
+            "best_for": "fashion editorials, magazine covers, luxury campaigns",
+            "creative_hook": "Use impossible architecture, floating fabric, and polished photographic light.",
+        },
+        "Luxury Fashion": {
+            "mood": "Premium, elegant, controlled",
+            "best_for": "brand campaigns, lookbooks, beauty and fashion direction",
+            "creative_hook": "Use refined styling, soft highlights, glossy surfaces, and restraint.",
+        },
+        "AI Cinematic Storyboard": {
+            "mood": "Narrative, atmospheric, motion-ready",
+            "best_for": "film previsualization, music videos, storyboards",
+            "creative_hook": "Use dramatic framing, volumetric light, camera movement, and sequence logic.",
+        },
+    }
+    return profiles.get(
+        style,
+        {
+            "mood": "Experimental and flexible",
+            "best_for": "visual exploration and creative ideation",
+            "creative_hook": "Use a clear subject, strong lighting, and a specific emotional goal.",
+        },
+    )
+
+
+def render_visual_trend_playground(prompts, style_period, works, selected_styles, selected_period, selected_tool):
+    show_section("Explore a Visual Trend")
+    st.caption(
+        "Start with a style, a creative goal, and a representative image. The data is still there, but the first move is creative exploration."
+    )
+
+    styles = sorted(works["style"].unique().tolist())
+    goals = [
+        "Brand campaign",
+        "Short film moodboard",
+        "Product launch",
+        "Game world concept",
+        "Social media visual",
+    ]
+
+    if st.session_state.get("home_explore_style") not in styles:
+        filtered_choices = [style for style in selected_styles if style in styles]
+        st.session_state.home_explore_style = filtered_choices[0] if filtered_choices else styles[0]
+    if st.session_state.get("home_goal") not in goals:
+        st.session_state.home_goal = goals[0]
+
+    if st.button("Surprise me with a visual direction", width="stretch"):
+        st.session_state.home_explore_style = random.choice(styles)
+        st.session_state.home_goal = random.choice(goals)
+        st.session_state.home_surprise_notice = True
+        st.rerun()
+
+    if st.session_state.get("home_surprise_notice"):
+        st.success("New visual direction generated. Use the prompt starter below as a launch point.")
+        st.session_state.home_surprise_notice = False
+
+    col_controls, col_preview = st.columns([1, 1.15])
+    with col_controls:
+        explore_style = st.selectbox("Style to explore", styles, key="home_explore_style")
+        creative_goal = st.selectbox("Creative goal", goals, key="home_goal")
+
+        profile = style_profile(explore_style)
+        style_rows = prompts[prompts["style"] == explore_style]
+        selected_date = pd.to_datetime(selected_period)
+        latest_rows = style_period[
+            (style_period["style"] == explore_style) & (style_period["period"] <= selected_date)
+        ].sort_values("period")
+        latest_score = float(latest_rows["popularity"].iloc[-1]) if not latest_rows.empty else 0.0
+        total_matches = int(style_rows["prompt_count"].sum()) if not style_rows.empty else 0
+        top_keywords = (
+            style_rows.groupby("keyword")["prompt_count"].sum().sort_values(ascending=False).head(4).index.tolist()
+            if not style_rows.empty
+            else []
+        )
+        tag_html = " ".join(f'<span class="tag">{escape(keyword)}</span>' for keyword in top_keywords)
+
+        with st.container(border=True):
+            st.write(f"**{explore_style} personality card**")
+            st.caption(f"Mood: {profile['mood']}")
+            st.caption(f"Best for: {profile['best_for']}")
+            st.caption(f"Trend evidence: {total_matches:,} matched DiffusionDB prompts")
+            st.progress(min(latest_score / 100, 1.0), text=f"Trend energy on {selected_period}: {latest_score:.1f}/100")
+            if tag_html:
+                st.markdown(tag_html, unsafe_allow_html=True)
+
+    with col_preview:
+        work = works[works["style"] == explore_style].iloc[0]
+        safe_image(work["image"], caption=f'{work["style"]} | {work["recommended_tool"]}')
+        st.caption(work["visual_evidence"])
+
+    prompt = (
+        f"{creative_goal.lower()} using {explore_style.lower()}: {work['prompt_starter']}. "
+        f"Build the direction around {profile['creative_hook']} Use {selected_tool} as the first tool to test, "
+        "then refine composition, format, lighting, audience, and production context."
+    )
+    st.text_area("Creative direction starter", prompt, height=110)
+
+
+def render_visual_highlights(works):
+    show_section("Visual Highlights")
+    st.caption("Representative concept images make the trend categories easier to understand before reading the charts.")
+    preferred_styles = ["AI Cinematic Storyboard", "Surreal Editorial", "Luxury Fashion"]
+    highlight_df = works[works["style"].isin(preferred_styles)]
+    if highlight_df.empty:
+        highlight_df = works.head(3)
+
+    cols = st.columns(3)
+    for index, row in highlight_df.head(3).reset_index(drop=True).iterrows():
+        with cols[index]:
+            with st.container(border=True):
+                safe_image(row["image"], width="stretch")
+                st.write(f"**{row['style']}**")
+                st.caption(row["representative_work"])
+                st.caption(row["why_it_represents_the_trend"])
+
+
+def render_style_duel(works):
+    show_section("Style Duel")
+    st.caption("Compare two visual languages side by side before deciding which one fits your idea.")
+    styles = sorted(works["style"].unique().tolist())
+    col_a, col_b = st.columns(2)
+    with col_a:
+        style_a = st.selectbox("First style", styles, index=0, key="duel_style_a")
+    with col_b:
+        default_b = 1 if len(styles) > 1 else 0
+        style_b = st.selectbox("Second style", styles, index=default_b, key="duel_style_b")
+
+    row_a = works[works["style"] == style_a].iloc[0]
+    row_b = works[works["style"] == style_b].iloc[0]
+    profile_a = style_profile(style_a)
+    profile_b = style_profile(style_b)
+
+    col_left, col_right = st.columns(2)
+    for col, row, profile in [(col_left, row_a, profile_a), (col_right, row_b, profile_b)]:
+        with col:
+            with st.container(border=True):
+                safe_image(row["image"], width="stretch")
+                st.write(f"**{row['style']}**")
+                st.caption(f"Mood: {profile['mood']}")
+                st.caption(f"Best for: {profile['best_for']}")
+                st.caption(f"Prompt cue: {row['prompt_starter']}")
 
 
 def selected_points(event):
@@ -1556,6 +1738,10 @@ def main():
         filtered_latest = style_period[style_period["period"] == selected_date]
 
     render_hero(prompts, filtered_latest, summary)
+    render_visual_trend_playground(prompts, style_period, works, selected_styles, selected_period, selected_tool)
+    render_visual_highlights(works)
+    render_style_duel(works)
+    render_snapshot()
     render_toolchain_snapshot()
     render_evidence_model_snapshot(source_coverage, ecosystem)
 
@@ -1564,8 +1750,6 @@ def main():
             f"Random exploration insight: {selected_styles[0]} on {selected_period} can be inspected alongside "
             f"{selected_tool}. Open the gallery and keyword pages to inspect the evidence."
         )
-
-    render_snapshot()
 
     pages = [
         "Trend Analytics",

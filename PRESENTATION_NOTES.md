@@ -2,7 +2,7 @@
 
 ## 1. Project Topic
 
-AI Visual Trend Dashboard is a Data Hub Dashboard about AI-generated visual culture. It explores how prompt language, visual styles, AI tools, and representative images reveal changes in creative technology.
+AI Visual Trend Dashboard is a creative data dashboard about AI-generated visual culture. It begins with visual exploration and then connects that experience to real prompt data, tool evidence, and research notes.
 
 ## 2. Target Users
 
@@ -10,6 +10,7 @@ AI Visual Trend Dashboard is a Data Hub Dashboard about AI-generated visual cult
 - Art directors who compare tools and styles
 - Students studying AI-generated visual culture
 - Creators looking for prompt and moodboard ideas
+- Users who want an engaging way to turn visual trends into creative directions
 
 ## 3. Data Story
 
@@ -24,18 +25,20 @@ Use the live hero metrics during the presentation. They dynamically identify the
 ## 5. Main Features To Demo
 
 1. Show top metrics and the 981,354 safety-filtered DiffusionDB prompt count.
-2. Explain the AI Toolchain Snapshot: ideation, customization, commercial design, and motion/video.
-3. Explain the Evidence Model Snapshot: historical baseline, current ecosystem layer, and source coverage model.
-4. Use sidebar filters to select style, UTC date, tool, capability focus, and evidence lens.
-5. Click a chart point for drill-down keywords and representative images.
-6. Show the Trend Confidence Score and explain that it is an evidence-confidence score, not a statistical truth score.
-7. Open Representative Works and explain visual evidence.
-8. Open Tool Benchmarks to show the factual capability matrix and official source link.
-9. Open Evidence Coverage and switch between Historical Baseline, Current Ecosystem, Multi-Source Evidence, and Controlled Benchmark Protocol.
-10. Open Creative Strategy and show Use Case Recommendation.
-11. Show Motion Preview and explain why motion is used only for cinematic/editorial/brand use cases.
-12. Open Real References and explain how official tool references support the dashboard categories.
-13. Show the 7-, 14-, and 21-day exploratory projections, momentum map, and comparison table. Explain why the uncertainty range expands at longer horizons.
+2. Use Explore a Visual Trend to show how a user can choose a style, creative goal, and prompt starter.
+3. Show Visual Highlights and Style Duel to explain the visual language of different AI styles.
+4. Explain the AI Toolchain Snapshot: ideation, customization, commercial design, and motion/video.
+5. Explain the Evidence Model Snapshot: historical baseline, current ecosystem layer, and source coverage model.
+6. Use sidebar filters to select style, UTC date, tool, capability focus, and evidence lens.
+7. Click a chart point for drill-down keywords and representative images.
+8. Show the Trend Confidence Score and explain that it is an evidence-confidence score, not a statistical truth score.
+9. Open Representative Works and explain visual evidence.
+10. Open Tool Benchmarks to show the factual capability matrix and official source link.
+11. Open Evidence Coverage and switch between Historical Baseline, Current Ecosystem, Multi-Source Evidence, and Controlled Benchmark Protocol.
+12. Open Creative Strategy and show Use Case Recommendation.
+13. Show Motion Preview and explain why motion is used only for cinematic/editorial/brand use cases.
+14. Open Real References and explain how official tool references support the dashboard categories.
+15. Show the 7-, 14-, and 21-day exploratory projections, momentum map, and comparison table. Explain why the uncertainty range expands at longer horizons.
 
 ## 6. Technical Stack
 
@@ -47,6 +50,7 @@ Use the live hero metrics during the presentation. They dynamically identify the
 - Lightweight GIF previews for selected motion-relevant styles
 - Official reference links for real-world context
 - Multi-source evidence coverage files for source reliability and future benchmark planning
+- Homepage creative interaction modules: Visual Trend Playground, Visual Highlights, and Style Duel
 
 ## 7. Honest Limitation
 
@@ -54,4 +58,4 @@ DiffusionDB is real, but its 2M metadata table covers a short August 2022 collec
 
 ## 8. Final One-Sentence Pitch
 
-This project turns AI prompt data into a visual trend research dashboard that helps users understand not only which styles are visible in the data, but how strong the evidence is, why the styles matter, and how they can be used in real creative work.
+This project turns AI prompt data into a creative visual trend experience: users can first explore style ideas, then check the data and evidence behind those trends.
