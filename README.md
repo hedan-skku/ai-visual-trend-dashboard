@@ -1,12 +1,17 @@
 # AI Visual Trend Dashboard
 
-An interactive Streamlit dashboard for exploring AI-generated visual culture through creative style discovery, representative visual examples, real DiffusionDB prompt statistics, multi-source evidence layers, factual tool capability references, keyword signals, and short-horizon exploratory forecasts.
+An interactive Streamlit dashboard for exploring AI-generated visual culture through creative style discovery, fresh homepage preview images, real DiffusionDB prompt statistics, a 2024-2026 current trend horizon, multi-source evidence layers, factual tool capability references, keyword signals, and exploratory forecasts.
 
 ## Key Insight
 
 The dashboard reports style signals found in the official DiffusionDB 2M metadata table. Tracked styles are assigned with documented keyword rules, so the results are transparent and reproducible rather than presented as a universal ranking of AI art.
 
-The homepage is designed as a creative exploration experience first: users can pick a visual style, generate a creative direction starter, compare two style languages, and inspect representative concept images before going deeper into charts and evidence.
+The homepage is designed as a creative exploration experience first: users can pick a visual style, generate a creative direction starter, compare two style languages, and inspect fresh explore-preview images before going deeper into charts and evidence.
+
+The time structure is intentionally separated:
+
+- `2022 historical baseline`: real DiffusionDB prompt metadata and transparent keyword-rule classification.
+- `2024-2026 current trend horizon`: evidence-weighted outlook signals based on newer ecosystem references, official tool capabilities, dataset discovery, and benchmark planning.
 
 Because DiffusionDB has a short August 2022 source window, the final version adds an Evidence Coverage model: current ecosystem signals, source reliability notes, and a controlled benchmark protocol are displayed separately from the historical prompt counts.
 
@@ -72,6 +77,8 @@ Current project data lives in:
 - `data/current_ecosystem_signals.csv`
 - `data/controlled_benchmark_prompts.csv`
 - `data/benchmark_rubric.csv`
+- `data/trend_horizon_2024_2026.csv`
+- `data/explore_previews.csv`
 
 The statistics are derived from the official [DiffusionDB dataset](https://huggingface.co/datasets/poloclub/diffusiondb), a CC0 dataset of real Stable Diffusion Discord generations. The dashboard uses the official 2M-row text-only `metadata.parquet` table.
 
@@ -114,8 +121,10 @@ The newer evidence files do not overwrite DiffusionDB counts. They document what
 
 - `source_coverage.csv` separates historical baseline, expanded prompt corpus, dataset discovery, current ecosystem signal, capability evidence, and controlled benchmark layers.
 - `current_ecosystem_signals.csv` records newer signals such as image-to-video workflows, commercial generative production, open prompt corpus expansion, and community model/tag APIs.
+- `trend_horizon_2024_2026.csv` turns those signals into a clearly labeled 2024-2026 outlook layer.
 - `controlled_benchmark_prompts.csv` defines 24 reusable prompts for a future fair cross-tool experiment.
 - `benchmark_rubric.csv` defines how outputs should be scored before any empirical tool ranking is claimed.
+- `explore_previews.csv` maps each style to a separate homepage preview image so the exploration module does not repeat the representative works gallery.
 
 ## Rebuild The Real Data
 
@@ -142,6 +151,7 @@ python3 scripts/build_real_data.py \
 - Homepage Visual Trend Playground for style discovery and creative direction starters
 - Style Duel for side-by-side comparison of two visual languages
 - Visual Highlights preview with representative concept images
+- 2024-2026 Current Trend Horizon chart for forward-looking AI visual directions
 - Homepage AI Toolchain Snapshot showing where each tool fits in the production workflow
 - Homepage Evidence Model Snapshot explaining how DiffusionDB limitations are handled
 - Plotly chart selection with click drill-down
@@ -198,16 +208,17 @@ For Streamlit Cloud:
 Record a 1-2 minute Loom or OBS video:
 
 1. Show the dashboard hero metrics and data volume.
-2. Use Explore a Visual Trend to generate a creative direction starter.
-3. Compare two styles in Style Duel.
-4. Use the sidebar filters.
-5. Click a trend chart point to show drill-down details.
-6. Open Representative Works and explain that the local images are illustrative concept assets.
-7. Use Random Explore.
-8. Show Use Case Recommendation and Motion Preview.
-9. Open Evidence Coverage and switch the evidence lens to explain why the project is no longer limited to a single DiffusionDB reading.
-10. Open Real References to show official research links.
-11. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
+2. Show the 2024-2026 Current Trend Horizon and explain that it is a forward-looking signal layer, not DiffusionDB prompt volume.
+3. Use Explore a Visual Trend to generate a creative direction starter with fresh preview images.
+4. Compare two styles in Style Duel.
+5. Use the sidebar filters.
+6. Click a trend chart point to show drill-down details.
+7. Open Representative Works and explain that the gallery images are separate illustrative concept assets.
+8. Use Random Explore.
+9. Show Use Case Recommendation and Motion Preview.
+10. Open Evidence Coverage and switch the evidence lens to explain why the project is no longer limited to a single DiffusionDB reading.
+11. Open Real References to show official research links.
+12. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
 
 ## Suggested Presentation Insight
 

@@ -18,6 +18,8 @@ The dashboard derives its core statistics from the official DiffusionDB 2M metad
 
 The project also acknowledges that DiffusionDB is not enough by itself. The final website adds a multi-source evidence model with Krea Open Prompts, Hugging Face dataset discovery, Civitai API planning, official tool documentation, AIS-4SD, and a controlled benchmark protocol. These layers add current context without mixing unnormalized sources into the historical DiffusionDB trend counts.
 
+To make the project feel less outdated, the time design is split into two layers. DiffusionDB is presented as a real 2022 historical baseline, while a separate 2024-2026 Current Trend Horizon shows evidence-weighted outlook signals for AI video storyboarding, commercial AI production, open model ecosystems, synthetic realism, prompt corpus expansion, product visualization, and personalized style systems.
+
 ## 4. Key Insight
 
 Use the live hero metrics during the presentation. They dynamically identify the leading tracked style, runner-up style, and largest observed first-to-last-day change from real DiffusionDB prompt matches.
@@ -25,20 +27,21 @@ Use the live hero metrics during the presentation. They dynamically identify the
 ## 5. Main Features To Demo
 
 1. Show top metrics and the 981,354 safety-filtered DiffusionDB prompt count.
-2. Use Explore a Visual Trend to show how a user can choose a style, creative goal, and prompt starter.
-3. Show Visual Highlights and Style Duel to explain the visual language of different AI styles.
-4. Explain the AI Toolchain Snapshot: ideation, customization, commercial design, and motion/video.
-5. Explain the Evidence Model Snapshot: historical baseline, current ecosystem layer, and source coverage model.
-6. Use sidebar filters to select style, UTC date, tool, capability focus, and evidence lens.
-7. Click a chart point for drill-down keywords and representative images.
-8. Show the Trend Confidence Score and explain that it is an evidence-confidence score, not a statistical truth score.
-9. Open Representative Works and explain visual evidence.
-10. Open Tool Benchmarks to show the factual capability matrix and official source link.
-11. Open Evidence Coverage and switch between Historical Baseline, Current Ecosystem, Multi-Source Evidence, and Controlled Benchmark Protocol.
-12. Open Creative Strategy and show Use Case Recommendation.
-13. Show Motion Preview and explain why motion is used only for cinematic/editorial/brand use cases.
-14. Open Real References and explain how official tool references support the dashboard categories.
-15. Show the 7-, 14-, and 21-day exploratory projections, momentum map, and comparison table. Explain why the uncertainty range expands at longer horizons.
+2. Show the 2024-2026 Current Trend Horizon and explain why it is separated from DiffusionDB prompt counts.
+3. Use Explore a Visual Trend to show how a user can choose a style, creative goal, fresh preview image, and prompt starter.
+4. Show Visual Highlights and Style Duel to explain the visual language of different AI styles.
+5. Explain the AI Toolchain Snapshot: ideation, customization, commercial design, and motion/video.
+6. Explain the Evidence Model Snapshot: historical baseline, current ecosystem layer, and source coverage model.
+7. Use sidebar filters to select style, historical baseline date, tool, capability focus, and evidence lens.
+8. Click a chart point for drill-down keywords and representative images.
+9. Show the Trend Confidence Score and explain that it is an evidence-confidence score, not a statistical truth score.
+10. Open Representative Works and explain visual evidence.
+11. Open Tool Benchmarks to show the factual capability matrix and official source link.
+12. Open Evidence Coverage and switch between Historical Baseline, Current Ecosystem, Multi-Source Evidence, and Controlled Benchmark Protocol.
+13. Open Creative Strategy and show Use Case Recommendation.
+14. Show Motion Preview and explain why motion is used only for cinematic/editorial/brand use cases.
+15. Open Real References and explain how official tool references support the dashboard categories.
+16. Show the 7-, 14-, and 21-day exploratory projections, momentum map, and comparison table. Explain why longer horizons have wider uncertainty.
 
 ## 6. Technical Stack
 
@@ -51,6 +54,8 @@ Use the live hero metrics during the presentation. They dynamically identify the
 - Official reference links for real-world context
 - Multi-source evidence coverage files for source reliability and future benchmark planning
 - Homepage creative interaction modules: Visual Trend Playground, Visual Highlights, and Style Duel
+- 2024-2026 Current Trend Horizon data layer
+- Separate explore-preview image set for homepage freshness
 
 ## 7. Honest Limitation
 

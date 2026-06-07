@@ -267,6 +267,8 @@ def load_data():
         ecosystem_path = data_path("current_ecosystem_signals.csv")
         benchmark_prompts_path = data_path("controlled_benchmark_prompts.csv")
         benchmark_rubric_path = data_path("benchmark_rubric.csv")
+        horizon_path = data_path("trend_horizon_2024_2026.csv")
+        explore_previews_path = data_path("explore_previews.csv")
 
         prompts = pd.read_csv(prompt_path)
         tools = pd.read_csv(tool_path)
@@ -280,6 +282,8 @@ def load_data():
         ecosystem = pd.read_csv(ecosystem_path)
         benchmark_prompts = pd.read_csv(benchmark_prompts_path)
         benchmark_rubric = pd.read_csv(benchmark_rubric_path)
+        horizon = pd.read_csv(horizon_path)
+        explore_previews = pd.read_csv(explore_previews_path)
     except FileNotFoundError as exc:
         friendly_error(
             f"Data file missing: {exc.filename}. Restore the committed data/ CSV files or run "
@@ -352,6 +356,8 @@ def load_data():
         ecosystem,
         benchmark_prompts,
         benchmark_rubric,
+        horizon,
+        explore_previews,
     )
 
 
@@ -391,10 +397,11 @@ def render_sidebar(styles, tools, periods):
             key="selected_styles",
         )
         selected_period = st.select_slider(
-            "Analysis date",
+            "Historical baseline date",
             options=periods,
             key="selected_period",
         )
+        st.caption("DiffusionDB is a real 2022 baseline. Current 2024-2026 signals are shown as a separate horizon layer.")
         selected_tool = st.selectbox(
             "AI tool deep dive",
             tools,
@@ -634,7 +641,91 @@ def style_profile(style):
     )
 
 
-def render_visual_trend_playground(prompts, style_period, works, selected_styles, selected_period, selected_tool):
+def preview_for_style(explore_previews, works, style):
+    preview = explore_previews[explore_previews["style"] == style]
+    if not preview.empty:
+        return preview.iloc[0]
+
+    work = works[works["style"] == style].iloc[0]
+    return pd.Series(
+        {
+            "style": work["style"],
+            "image": work["image"],
+            "preview_title": work["representative_work"],
+            "preview_caption": work["visual_evidence"],
+        }
+    )
+
+
+def render_current_trend_horizon(horizon):
+    show_section("2024-2026 Current Trend Horizon")
+    st.caption(
+        "This is a forward-looking signal layer, not DiffusionDB prompt volume. It uses current ecosystem evidence, "
+        "official tool capability references, dataset discovery, and benchmark planning to show where AI visual culture is moving."
+    )
+
+    latest_year = int(horizon["horizon_year"].max())
+    latest = horizon[horizon["horizon_year"] == latest_year].sort_values("signal_score", ascending=False)
+    top_theme = latest.iloc[0]
+    gain = (
+        horizon.pivot_table(index="trend_theme", columns="horizon_year", values="signal_score", aggfunc="mean")
+        .dropna()
+        .assign(gain=lambda df: df[latest_year] - df[int(horizon["horizon_year"].min())])
+        .sort_values("gain", ascending=False)
+    )
+    fastest_theme = gain.iloc[0]
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Leading 2026 Signal", top_theme["trend_theme"], f'{int(top_theme["signal_score"])} signal')
+    c2.metric("Fastest Horizon Gain", gain.index[0], f'+{int(fastest_theme["gain"])}')
+    c3.metric("Horizon Window", "2024-2026", "current + outlook")
+
+    fig = px.line(
+        horizon,
+        x="horizon_year",
+        y="signal_score",
+        color="trend_theme",
+        markers=True,
+        title="Evidence-weighted AI visual trend horizon",
+        hover_data=["related_style", "confidence_label", "source_layer", "user_takeaway"],
+        color_discrete_sequence=px.colors.qualitative.Set2,
+    )
+    fig.update_xaxes(dtick=1)
+    st.plotly_chart(plot_layout(fig, height=460), use_container_width=True)
+
+    with st.expander("How to read the 2024-2026 horizon", expanded=False):
+        st.write(
+            "The horizon score is a qualitative signal score. It should be read as a research outlook, not as a measured "
+            "usage count. DiffusionDB remains the historical prompt baseline; this layer explains newer directions such as "
+            "AI video, commercial AI production, open model communities, and synthetic realism."
+        )
+        st.dataframe(
+            latest[["trend_theme", "related_style", "signal_score", "confidence_label", "evidence_basis", "user_takeaway"]]
+            .rename(
+                columns={
+                    "trend_theme": "Trend theme",
+                    "related_style": "Related style",
+                    "signal_score": "2026 signal",
+                    "confidence_label": "Confidence",
+                    "evidence_basis": "Evidence basis",
+                    "user_takeaway": "User takeaway",
+                }
+            ),
+            width="stretch",
+            hide_index=True,
+            height=260,
+        )
+
+
+def render_visual_trend_playground(
+    prompts,
+    style_period,
+    works,
+    explore_previews,
+    selected_styles,
+    selected_period,
+    selected_tool,
+):
     show_section("Explore a Visual Trend")
     st.caption(
         "Start with a style, a creative goal, and a representative image. The data is still there, but the first move is creative exploration."
@@ -696,8 +787,9 @@ def render_visual_trend_playground(prompts, style_period, works, selected_styles
 
     with col_preview:
         work = works[works["style"] == explore_style].iloc[0]
-        safe_image(work["image"], caption=f'{work["style"]} | {work["recommended_tool"]}')
-        st.caption(work["visual_evidence"])
+        preview = preview_for_style(explore_previews, works, explore_style)
+        safe_image(preview["image"], caption=f'{preview["style"]} | Explore preview')
+        st.caption(f"{preview['preview_title']}: {preview['preview_caption']}")
 
     prompt = (
         f"{creative_goal.lower()} using {explore_style.lower()}: {work['prompt_starter']}. "
@@ -725,7 +817,7 @@ def render_visual_highlights(works):
                 st.caption(row["why_it_represents_the_trend"])
 
 
-def render_style_duel(works):
+def render_style_duel(works, explore_previews):
     show_section("Style Duel")
     st.caption("Compare two visual languages side by side before deciding which one fits your idea.")
     styles = sorted(works["style"].unique().tolist())
@@ -738,14 +830,19 @@ def render_style_duel(works):
 
     row_a = works[works["style"] == style_a].iloc[0]
     row_b = works[works["style"] == style_b].iloc[0]
+    preview_a = preview_for_style(explore_previews, works, style_a)
+    preview_b = preview_for_style(explore_previews, works, style_b)
     profile_a = style_profile(style_a)
     profile_b = style_profile(style_b)
 
     col_left, col_right = st.columns(2)
-    for col, row, profile in [(col_left, row_a, profile_a), (col_right, row_b, profile_b)]:
+    for col, row, preview, profile in [
+        (col_left, row_a, preview_a, profile_a),
+        (col_right, row_b, preview_b, profile_b),
+    ]:
         with col:
             with st.container(border=True):
-                safe_image(row["image"], width="stretch")
+                safe_image(preview["image"], width="stretch")
                 st.write(f"**{row['style']}**")
                 st.caption(f"Mood: {profile['mood']}")
                 st.caption(f"Best for: {profile['best_for']}")
@@ -803,8 +900,11 @@ def render_drilldown(points, prompts, works):
 
 
 def tab_trends(prompts, style_period, samplers, aspect_ratios, works, selected_styles, selected_period):
-    show_section("Visual Trend Analysis")
-    st.caption("Click any line point or ranking bar to inspect the real DiffusionDB keyword matches behind that trend.")
+    show_section("Historical Prompt Baseline")
+    st.caption(
+        "This chart uses real 2022 DiffusionDB prompt metadata as a baseline. Click any line point or ranking bar "
+        "to inspect the keyword matches behind that historical signal."
+    )
     selected_date = pd.to_datetime(selected_period)
     filtered = style_period[(style_period["style"].isin(selected_styles)) & (style_period["period"] <= selected_date)]
     latest = filtered[filtered["period"] == selected_date]
@@ -851,7 +951,7 @@ def tab_trends(prompts, style_period, samplers, aspect_ratios, works, selected_s
     show_section("Clicked Insight")
     render_drilldown(selected_points(trend_event) or selected_points(bar_event), prompts, works)
 
-    show_section("Real Metadata Profile")
+    show_section("Baseline Metadata Profile")
     st.caption("These charts come directly from DiffusionDB metadata after the same safety filter.")
     col_sampler, col_ratio = st.columns([1.35, 1])
     fig_sampler = px.bar(
@@ -957,7 +1057,7 @@ def render_trend_confidence(prompts, ecosystem, selected_styles):
         )
 
 
-def tab_evidence_coverage(source_coverage, ecosystem, benchmark_prompts, benchmark_rubric, evidence_lens):
+def tab_evidence_coverage(source_coverage, ecosystem, benchmark_prompts, benchmark_rubric, horizon, evidence_lens):
     show_section("Data Coverage & Source Reliability")
     st.caption(
         "This page turns DiffusionDB's limitation into a research design: DiffusionDB remains the quantitative "
@@ -967,7 +1067,7 @@ def tab_evidence_coverage(source_coverage, ecosystem, benchmark_prompts, benchma
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Evidence Layers", f"{len(source_coverage)}")
     c2.metric("Current Signals", f"{len(ecosystem)}")
-    c3.metric("Benchmark Prompts", f"{len(benchmark_prompts)}")
+    c3.metric("Horizon Signals", f"{horizon['trend_theme'].nunique()} themes")
     c4.metric("Rubric Dimensions", f"{len(benchmark_rubric)}")
 
     lens_guidance = {
@@ -1131,6 +1231,28 @@ def tab_evidence_coverage(source_coverage, ecosystem, benchmark_prompts, benchma
             hide_index=True,
             height=430,
         )
+
+    show_section("2024-2026 Horizon Layer")
+    st.caption(
+        "These rows are separated from DiffusionDB counts. They are evidence-weighted outlook signals for current and future-facing trends."
+    )
+    st.dataframe(
+        horizon[["horizon_year", "trend_theme", "related_style", "signal_score", "confidence_label", "source_layer", "user_takeaway"]]
+        .rename(
+            columns={
+                "horizon_year": "Year",
+                "trend_theme": "Trend theme",
+                "related_style": "Related style",
+                "signal_score": "Signal score",
+                "confidence_label": "Confidence",
+                "source_layer": "Source layer",
+                "user_takeaway": "User takeaway",
+            }
+        ),
+        width="stretch",
+        hide_index=True,
+        height=360,
+    )
 
     show_section("Controlled AI Tool Benchmark Protocol")
     st.caption(
@@ -1492,11 +1614,10 @@ def tab_strategy(style_period, works, styles):
         with cols[index]:
             safe_image(row["image"], caption=f'{row["style"]} | {row["model"]}')
 
-    show_section("Exploratory Forecast: Multi-Horizon Style Signals")
+    show_section("2026 Creative Outlook: Multi-Horizon Style Signals")
     st.caption(
-        "Forecasts use each style's daily share of tracked DiffusionDB matches, rather than raw volume. "
-        "Recent days receive more weight, uncertainty expands with the horizon, and projections remain exploratory "
-        "because the source window is short."
+        "This section starts from each style's daily share of tracked DiffusionDB matches, then projects scenario checkpoints. "
+        "It should be read together with the 2024-2026 Current Trend Horizon on the homepage because the historical source window is short."
     )
 
     forecast_horizon = st.select_slider(
@@ -1718,6 +1839,8 @@ def main():
             ecosystem,
             benchmark_prompts,
             benchmark_rubric,
+            horizon,
+            explore_previews,
         ) = load_data()
 
     styles = sorted(prompts["style"].unique().tolist())
@@ -1738,17 +1861,26 @@ def main():
         filtered_latest = style_period[style_period["period"] == selected_date]
 
     render_hero(prompts, filtered_latest, summary)
-    render_visual_trend_playground(prompts, style_period, works, selected_styles, selected_period, selected_tool)
+    render_current_trend_horizon(horizon)
+    render_visual_trend_playground(
+        prompts,
+        style_period,
+        works,
+        explore_previews,
+        selected_styles,
+        selected_period,
+        selected_tool,
+    )
     render_visual_highlights(works)
-    render_style_duel(works)
+    render_style_duel(works, explore_previews)
     render_snapshot()
     render_toolchain_snapshot()
     render_evidence_model_snapshot(source_coverage, ecosystem)
 
     if len(selected_styles) == 1:
         st.success(
-            f"Random exploration insight: {selected_styles[0]} on {selected_period} can be inspected alongside "
-            f"{selected_tool}. Open the gallery and keyword pages to inspect the evidence."
+            f"Random exploration insight: {selected_styles[0]} on the {selected_period} historical baseline can be inspected alongside "
+            f"{selected_tool}. Use the 2024-2026 horizon for current outlook and the gallery for visual evidence."
         )
 
     pages = [
@@ -1784,7 +1916,7 @@ def main():
     elif active_page == "Creative Strategy":
         tab_strategy(style_period, works, styles)
     elif active_page == "Evidence Coverage":
-        tab_evidence_coverage(source_coverage, ecosystem, benchmark_prompts, benchmark_rubric, evidence_lens)
+        tab_evidence_coverage(source_coverage, ecosystem, benchmark_prompts, benchmark_rubric, horizon, evidence_lens)
     elif active_page == "Real References":
         tab_references(references)
 
