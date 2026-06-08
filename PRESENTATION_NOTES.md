@@ -29,7 +29,7 @@ Use the live hero metrics during the presentation. They dynamically identify the
 1. Show top metrics and the 981,354 safety-filtered DiffusionDB prompt count.
 2. Show the 2024-2026 Current Trend Horizon and explain why it is separated from DiffusionDB prompt counts.
 3. Use Explore a Visual Trend to show how a user can choose a style, creative goal, fresh preview image, and prompt starter.
-4. Show Visual Highlights and Style Duel to explain the visual language of different AI styles.
+4. Show Visual Highlights to explain the visual language of different AI styles.
 5. Explain the AI Toolchain Snapshot: ideation, customization, commercial design, and motion/video.
 6. Explain the Evidence Model Snapshot: historical baseline, current ecosystem layer, and source coverage model.
 7. Use sidebar filters to select style, historical baseline date, tool, capability focus, and evidence lens.
@@ -53,7 +53,7 @@ Use the live hero metrics during the presentation. They dynamically identify the
 - Lightweight GIF previews for selected motion-relevant styles
 - Official reference links for real-world context
 - Multi-source evidence coverage files for source reliability and future benchmark planning
-- Homepage creative interaction modules: Visual Trend Playground, Visual Highlights, and Style Duel
+- Homepage creative interaction modules: Visual Trend Playground and Visual Highlights
 - 2024-2026 Current Trend Horizon data layer
 - Separate explore-preview image set for homepage freshness
 

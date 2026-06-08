@@ -41,61 +41,143 @@ def inject_css():
         <style>
         .stApp {{
             background:
-                radial-gradient(circle at top left, rgba(102, 217, 232, .10), transparent 28rem),
-                linear-gradient(180deg, {THEME["bg"]} 0%, #0a1018 100%);
+                linear-gradient(180deg, #070b10 0%, {THEME["bg"]} 38%, #0b1119 100%);
             color: {THEME["text"]};
         }}
 
+        .main .block-container {{
+            max-width: 1240px;
+            padding-top: 1.2rem;
+        }}
+
         section[data-testid="stSidebar"] {{
-            background: #0b1017;
+            background: linear-gradient(180deg, #0a1016 0%, #0d141d 100%);
             border-right: 1px solid rgba(255,255,255,.08);
             min-width: 18rem;
         }}
 
         div[data-testid="stMetric"] {{
-            background: rgba(16, 22, 32, .78);
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 8px;
-            padding: 1rem;
+            background: linear-gradient(180deg, rgba(18, 27, 39, .94), rgba(11, 17, 25, .94));
+            border: 1px solid rgba(255,255,255,.10);
+            border-top: 1px solid rgba(102, 217, 232, .24);
+            border-radius: 10px;
+            padding: 1rem 1.05rem;
+            box-shadow: 0 18px 40px rgba(0,0,0,.24);
         }}
 
-        .hero {{
-            min-height: 330px;
-            padding: 2.2rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,.08);
+        div[data-testid="stMetric"] p {{
+            color: {THEME["muted"]};
+        }}
+
+        div[data-testid="stMetricValue"] {{
+            color: #f4f8fb;
+        }}
+
+        .hero-panel {{
+            min-height: 300px;
+            padding: 2.4rem;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.11);
             background:
-                radial-gradient(circle at top left, rgba(102, 217, 232, .18), transparent 24rem),
-                linear-gradient(135deg, rgba(16, 22, 32, .98), rgba(8, 12, 16, .98));
+                linear-gradient(120deg, rgba(16, 22, 32, .98) 0%, rgba(12, 20, 29, .94) 52%, rgba(6, 10, 14, .98) 100%);
             background-size: cover;
             background-position: center;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            margin-bottom: 1.4rem;
+            margin: .4rem 0 1.2rem;
+            box-shadow: 0 28px 75px rgba(0,0,0,.35);
         }}
 
-        .eyebrow {{
+        .hero-kicker {{
             color: {THEME["cyan"]};
             font-size: .82rem;
             font-weight: 700;
+            letter-spacing: .08em;
             text-transform: uppercase;
             margin-bottom: .55rem;
         }}
 
-        .hero h1 {{
+        .hero-title {{
             color: {THEME["text"]};
             font-size: clamp(2rem, 5vw, 4.2rem);
             line-height: 1.03;
             margin: 0;
             max-width: 900px;
+            font-weight: 820;
         }}
 
-        .hero p {{
+        .hero-copy {{
             max-width: 780px;
             color: #cbd5df;
             margin-top: .9rem;
             font-size: 1.05rem;
+        }}
+
+        .hero-pill-row {{
+            margin-top: 1.05rem;
+        }}
+
+        .hero-pill {{
+            display: inline-flex;
+            align-items: center;
+            padding: .42rem .68rem;
+            border-radius: 999px;
+            margin: .18rem .28rem .18rem 0;
+            background: rgba(102, 217, 232, .11);
+            border: 1px solid rgba(102, 217, 232, .24);
+            color: #dffbff;
+            font-size: .86rem;
+            font-weight: 650;
+        }}
+
+        .insight-strip {{
+            background: linear-gradient(90deg, rgba(102,217,232,.12), rgba(227,191,115,.10));
+            border: 1px solid rgba(255,255,255,.10);
+            border-left: 3px solid {THEME["cyan"]};
+            border-radius: 10px;
+            padding: .95rem 1.05rem;
+            margin: .95rem 0 .4rem;
+            color: #e7f6f9;
+        }}
+
+        .insight-strip strong {{
+            color: #ffffff;
+        }}
+
+        .section-header-line {{
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            margin: 2.25rem 0 1rem;
+        }}
+
+        .section-header-line:before {{
+            content: "";
+            width: .35rem;
+            height: 1.25rem;
+            border-radius: 99px;
+            background: linear-gradient(180deg, {THEME["cyan"]}, {THEME["gold"]});
+        }}
+
+        .section-header-line h3 {{
+            margin: 0;
+            color: {THEME["gold"]};
+            font-size: 1.28rem;
+            font-weight: 800;
+        }}
+
+        .stButton > button {{
+            border-radius: 9px;
+            border: 1px solid rgba(102,217,232,.30);
+            background: linear-gradient(90deg, rgba(102,217,232,.18), rgba(227,191,115,.16));
+            color: #f2fbff;
+            font-weight: 720;
+        }}
+
+        .stButton > button:hover {{
+            border-color: rgba(102,217,232,.55);
+            color: #ffffff;
         }}
 
         .section-title {{
@@ -106,17 +188,17 @@ def inject_css():
         }}
 
         .story-card, .source-card, .prompt-card {{
-            background: rgba(16, 22, 32, .76);
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 8px;
+            background: linear-gradient(180deg, rgba(18, 27, 39, .86), rgba(11, 17, 25, .88));
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 10px;
             padding: 1rem;
             min-height: 100%;
         }}
 
         .work-card {{
-            background: rgba(16, 22, 32, .78);
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 8px;
+            background: linear-gradient(180deg, rgba(18, 27, 39, .86), rgba(11, 17, 25, .88));
+            border: 1px solid rgba(255,255,255,.10);
+            border-radius: 10px;
             overflow: hidden;
             min-height: 100%;
             margin-bottom: 1rem;
@@ -201,12 +283,12 @@ def inject_css():
         }}
 
         @media (max-width: 760px) {{
-            .hero {{
+            .hero-panel {{
                 min-height: 280px;
                 padding: 1.2rem;
             }}
 
-            .hero h1 {{
+            .hero-title {{
                 font-size: 2.1rem;
             }}
 
@@ -221,7 +303,14 @@ def inject_css():
 
 
 def show_section(title):
-    st.markdown(f"### {title}")
+    st.markdown(
+        f"""
+        <div class="section-header-line">
+            <h3>{escape(title)}</h3>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def safe_image(relative_path, **kwargs):
@@ -476,11 +565,24 @@ def render_hero(prompts, latest_df, summary):
             f"({int(top_one['prompt_count']):,} matched prompts)."
         )
 
-    st.caption("AI Visual Culture Research Dashboard")
-    st.title("AI Visual Trend Dashboard")
-    st.write(
-        "Pick a visual style, inspect what makes it recognizable, compare creative tools, and turn trend signals "
-        "into campaign, film, fashion, product, and storytelling ideas."
+    st.markdown(
+        """
+        <div class="hero-panel">
+            <div class="hero-kicker">AI Visual Culture Research Dashboard</div>
+            <h1 class="hero-title">AI Visual Trend Dashboard</h1>
+            <p class="hero-copy">
+                Explore the visual language of generative AI: from real prompt signals to cinematic style previews,
+                tool workflows, creative direction starters, and 2024-2026 trend outlooks.
+            </p>
+            <div class="hero-pill-row">
+                <span class="hero-pill">Real prompt baseline</span>
+                <span class="hero-pill">2024-2026 outlook</span>
+                <span class="hero-pill">Creative direction generator</span>
+                <span class="hero-pill">Visual evidence gallery</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     metric_1, metric_2, metric_3, metric_4 = st.columns(4)
@@ -489,9 +591,15 @@ def render_hero(prompts, latest_df, summary):
     metric_3.metric("Safe Prompts Analyzed", f"{safe_records:,}", "real DiffusionDB records")
     metric_4.metric("Tracked Style Matches", f"{classified_records:,}", f"{prompts['style'].nunique()} documented rules")
 
-    st.success(
-        f"Key insight from {max_period:%Y-%m-%d}: {ranking_sentence} {fastest_style.name} has the largest first-to-last-day "
-        f"change ({int(fastest_style['growth']):+,} matched prompts)."
+    st.markdown(
+        f"""
+        <div class="insight-strip">
+            <strong>Key insight from {max_period:%Y-%m-%d}:</strong>
+            {escape(ranking_sentence)} {escape(str(fastest_style.name))} has the largest first-to-last-day change
+            ({int(fastest_style['growth']):+,} matched prompts).
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
     with st.expander("Data credibility note", expanded=False):
         st.write(
@@ -815,38 +923,6 @@ def render_visual_highlights(works):
                 st.write(f"**{row['style']}**")
                 st.caption(row["representative_work"])
                 st.caption(row["why_it_represents_the_trend"])
-
-
-def render_style_duel(works, explore_previews):
-    show_section("Style Duel")
-    st.caption("Compare two visual languages side by side before deciding which one fits your idea.")
-    styles = sorted(works["style"].unique().tolist())
-    col_a, col_b = st.columns(2)
-    with col_a:
-        style_a = st.selectbox("First style", styles, index=0, key="duel_style_a")
-    with col_b:
-        default_b = 1 if len(styles) > 1 else 0
-        style_b = st.selectbox("Second style", styles, index=default_b, key="duel_style_b")
-
-    row_a = works[works["style"] == style_a].iloc[0]
-    row_b = works[works["style"] == style_b].iloc[0]
-    preview_a = preview_for_style(explore_previews, works, style_a)
-    preview_b = preview_for_style(explore_previews, works, style_b)
-    profile_a = style_profile(style_a)
-    profile_b = style_profile(style_b)
-
-    col_left, col_right = st.columns(2)
-    for col, row, preview, profile in [
-        (col_left, row_a, preview_a, profile_a),
-        (col_right, row_b, preview_b, profile_b),
-    ]:
-        with col:
-            with st.container(border=True):
-                safe_image(preview["image"], width="stretch")
-                st.write(f"**{row['style']}**")
-                st.caption(f"Mood: {profile['mood']}")
-                st.caption(f"Best for: {profile['best_for']}")
-                st.caption(f"Prompt cue: {row['prompt_starter']}")
 
 
 def selected_points(event):
@@ -1872,7 +1948,6 @@ def main():
         selected_tool,
     )
     render_visual_highlights(works)
-    render_style_duel(works, explore_previews)
     render_snapshot()
     render_toolchain_snapshot()
     render_evidence_model_snapshot(source_coverage, ecosystem)

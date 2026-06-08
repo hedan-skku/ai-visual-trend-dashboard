@@ -19,7 +19,7 @@ Map each core PRD feature to the actual website module: trend analysis, tool com
 Walk through the website structure: Home creative exploration, Trend Analytics, Representative Works, Tool Benchmarks, Keyword Insights, Creative Strategy, Evidence Coverage, and Real References.
 
 ## Slide 7: UI Design Direction
-Explain the dark UI, neon accents, sidebar navigation, responsive layout, and AI-themed visual language. Emphasize that the homepage now feels more like an exploration tool: users can generate a creative direction starter, view representative images, and compare two style languages before reading research details.
+Explain the dark UI, neon accents, sidebar navigation, responsive layout, and AI-themed visual language. Emphasize that the homepage now feels more like an exploration tool: users can generate a creative direction starter and view representative images before reading research details.
 
 ## Slide 8: Data Foundation
 Clarify the real dataset pipeline. The dashboard starts with the official DiffusionDB 2M metadata table, keeps 981,354 prompt records after documented safety filters, and assigns 263,472 tracked-style prompt matches with transparent rules. Then explain the limitation: DiffusionDB is a short 2022 historical window, so the final dashboard adds separate evidence layers for current ecosystem signals, source coverage, future controlled benchmark testing, and a 2024-2026 Current Trend Horizon.

@@ -6,7 +6,7 @@ An interactive Streamlit dashboard for exploring AI-generated visual culture thr
 
 The dashboard reports style signals found in the official DiffusionDB 2M metadata table. Tracked styles are assigned with documented keyword rules, so the results are transparent and reproducible rather than presented as a universal ranking of AI art.
 
-The homepage is designed as a creative exploration experience first: users can pick a visual style, generate a creative direction starter, compare two style languages, and inspect fresh explore-preview images before going deeper into charts and evidence.
+The homepage is designed as a creative exploration experience first: users can pick a visual style, generate a creative direction starter, and inspect fresh explore-preview images before going deeper into charts and evidence.
 
 The time structure is intentionally separated:
 
@@ -149,7 +149,6 @@ python3 scripts/build_real_data.py \
 - Sidebar filters for style, UTC date, tool, and capability focus
 - Random exploration button for live demos
 - Homepage Visual Trend Playground for style discovery and creative direction starters
-- Style Duel for side-by-side comparison of two visual languages
 - Visual Highlights preview with representative concept images
 - 2024-2026 Current Trend Horizon chart for forward-looking AI visual directions
 - Homepage AI Toolchain Snapshot showing where each tool fits in the production workflow
@@ -210,15 +209,14 @@ Record a 1-2 minute Loom or OBS video:
 1. Show the dashboard hero metrics and data volume.
 2. Show the 2024-2026 Current Trend Horizon and explain that it is a forward-looking signal layer, not DiffusionDB prompt volume.
 3. Use Explore a Visual Trend to generate a creative direction starter with fresh preview images.
-4. Compare two styles in Style Duel.
-5. Use the sidebar filters.
-6. Click a trend chart point to show drill-down details.
-7. Open Representative Works and explain that the gallery images are separate illustrative concept assets.
-8. Use Random Explore.
-9. Show Use Case Recommendation and Motion Preview.
-10. Open Evidence Coverage and switch the evidence lens to explain why the project is no longer limited to a single DiffusionDB reading.
-11. Open Real References to show official research links.
-12. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
+4. Use the sidebar filters.
+5. Click a trend chart point to show drill-down details.
+6. Open Representative Works and explain that the gallery images are separate illustrative concept assets.
+7. Use Random Explore.
+8. Show Use Case Recommendation and Motion Preview.
+9. Open Evidence Coverage and switch the evidence lens to explain why the project is no longer limited to a single DiffusionDB reading.
+10. Open Real References to show official research links.
+11. Show the multi-horizon forecast chart, momentum map, and scenario table; explain why longer horizons have wider uncertainty.
 
 ## Suggested Presentation Insight
 
