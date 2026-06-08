@@ -61,6 +61,26 @@ If port 8501 is busy:
 streamlit run app.py --server.port 8510
 ```
 
+## Local Network Testing On Phone Or iPad
+
+`localhost` only works on the computer that is running Streamlit. If the app runs on a Mac, opening `http://localhost:8510` on a phone or iPad will not work because the mobile browser treats `localhost` as the mobile device itself.
+
+For same-Wi-Fi testing, use the Mac network URL instead:
+
+```text
+http://192.168.0.100:8510
+```
+
+The IP address can change when the Wi-Fi network changes. Streamlit prints the current `Network URL` in the terminal log when the app starts.
+
+If that does not open, check:
+
+- The Mac and phone/iPad are on the same Wi-Fi network.
+- The Mac is awake and the Streamlit app is still running.
+- macOS Firewall is not blocking incoming connections.
+- VPN, campus Wi-Fi, guest Wi-Fi, or router client isolation is not separating devices.
+- For public access outside your local Wi-Fi, deploy to Streamlit Cloud instead of using a local URL.
+
 ## Data Source
 
 Current project data lives in:
@@ -79,6 +99,7 @@ Current project data lives in:
 - `data/benchmark_rubric.csv`
 - `data/trend_horizon_2024_2026.csv`
 - `data/explore_previews.csv`
+- `data/visual_highlights.csv`
 
 The statistics are derived from the official [DiffusionDB dataset](https://huggingface.co/datasets/poloclub/diffusiondb), a CC0 dataset of real Stable Diffusion Discord generations. The dashboard uses the official 2M-row text-only `metadata.parquet` table.
 
@@ -125,6 +146,7 @@ The newer evidence files do not overwrite DiffusionDB counts. They document what
 - `controlled_benchmark_prompts.csv` defines 24 reusable prompts for a future fair cross-tool experiment.
 - `benchmark_rubric.csv` defines how outputs should be scored before any empirical tool ranking is claimed.
 - `explore_previews.csv` maps each style to a separate homepage preview image so the exploration module does not repeat the representative works gallery.
+- `visual_highlights.csv` maps the homepage Visual Highlights section to a third image set, separate from both Explore previews and Representative Works.
 
 ## Rebuild The Real Data
 
@@ -149,7 +171,7 @@ python3 scripts/build_real_data.py \
 - Sidebar filters for style, UTC date, tool, and capability focus
 - Random exploration button for live demos
 - Homepage Visual Trend Playground for style discovery and creative direction starters
-- Visual Highlights preview with fresh homepage images separate from the Representative Works gallery
+- Visual Highlights preview with its own standalone images, separate from Explore previews and the Representative Works gallery
 - 2024-2026 Current Trend Horizon chart for forward-looking AI visual directions
 - Homepage AI Toolchain Snapshot showing where each tool fits in the production workflow
 - Homepage Evidence Model Snapshot explaining how DiffusionDB limitations are handled

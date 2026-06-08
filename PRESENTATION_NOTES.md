@@ -55,7 +55,7 @@ Use the live hero metrics during the presentation. They dynamically identify the
 - Multi-source evidence coverage files for source reliability and future benchmark planning
 - Homepage creative interaction modules: Visual Trend Playground and Visual Highlights
 - 2024-2026 Current Trend Horizon data layer
-- Separate explore-preview image set for homepage freshness
+- Separate explore-preview and visual-highlight image sets for homepage freshness
 
 ## 7. Honest Limitation
 

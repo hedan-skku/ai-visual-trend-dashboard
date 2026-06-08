@@ -358,6 +358,7 @@ def load_data():
         benchmark_rubric_path = data_path("benchmark_rubric.csv")
         horizon_path = data_path("trend_horizon_2024_2026.csv")
         explore_previews_path = data_path("explore_previews.csv")
+        visual_highlights_path = data_path("visual_highlights.csv")
 
         prompts = pd.read_csv(prompt_path)
         tools = pd.read_csv(tool_path)
@@ -373,6 +374,7 @@ def load_data():
         benchmark_rubric = pd.read_csv(benchmark_rubric_path)
         horizon = pd.read_csv(horizon_path)
         explore_previews = pd.read_csv(explore_previews_path)
+        visual_highlights = pd.read_csv(visual_highlights_path)
     except FileNotFoundError as exc:
         friendly_error(
             f"Data file missing: {exc.filename}. Restore the committed data/ CSV files or run "
@@ -447,6 +449,7 @@ def load_data():
         benchmark_rubric,
         horizon,
         explore_previews,
+        visual_highlights,
     )
 
 
@@ -907,24 +910,19 @@ def render_visual_trend_playground(
     st.text_area("Creative direction starter", prompt, height=110)
 
 
-def render_visual_highlights(explore_previews):
+def render_visual_highlights(visual_highlights):
     show_section("Visual Highlights")
     st.caption(
-        "Fresh homepage preview images introduce the visual mood before users open the separate Representative Works gallery."
+        "These are standalone highlight images for the homepage. They are separate from both Explore previews and the Representative Works gallery."
     )
-    preferred_styles = ["AI Cinematic Storyboard", "Surreal Editorial", "Luxury Fashion"]
-    highlight_df = explore_previews[explore_previews["style"].isin(preferred_styles)]
-    if highlight_df.empty:
-        highlight_df = explore_previews.head(3)
-
     cols = st.columns(3)
-    for index, row in highlight_df.head(3).reset_index(drop=True).iterrows():
+    for index, row in visual_highlights.head(3).reset_index(drop=True).iterrows():
         with cols[index]:
             with st.container(border=True):
                 safe_image(row["image"], width="stretch")
-                st.write(f"**{row['style']}**")
-                st.caption(row["preview_title"])
-                st.caption(row["preview_caption"])
+                st.write(f"**{row['title']}**")
+                st.caption(row["theme"])
+                st.caption(row["caption"])
 
 
 def selected_points(event):
@@ -1919,6 +1917,7 @@ def main():
             benchmark_rubric,
             horizon,
             explore_previews,
+            visual_highlights,
         ) = load_data()
 
     styles = sorted(prompts["style"].unique().tolist())
@@ -1949,7 +1948,7 @@ def main():
         selected_period,
         selected_tool,
     )
-    render_visual_highlights(explore_previews)
+    render_visual_highlights(visual_highlights)
     render_snapshot()
     render_toolchain_snapshot()
     render_evidence_model_snapshot(source_coverage, ecosystem)
