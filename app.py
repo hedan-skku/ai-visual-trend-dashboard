@@ -907,13 +907,15 @@ def render_visual_trend_playground(
     st.text_area("Creative direction starter", prompt, height=110)
 
 
-def render_visual_highlights(works):
+def render_visual_highlights(explore_previews):
     show_section("Visual Highlights")
-    st.caption("Representative concept images make the trend categories easier to understand before reading the charts.")
+    st.caption(
+        "Fresh homepage preview images introduce the visual mood before users open the separate Representative Works gallery."
+    )
     preferred_styles = ["AI Cinematic Storyboard", "Surreal Editorial", "Luxury Fashion"]
-    highlight_df = works[works["style"].isin(preferred_styles)]
+    highlight_df = explore_previews[explore_previews["style"].isin(preferred_styles)]
     if highlight_df.empty:
-        highlight_df = works.head(3)
+        highlight_df = explore_previews.head(3)
 
     cols = st.columns(3)
     for index, row in highlight_df.head(3).reset_index(drop=True).iterrows():
@@ -921,8 +923,8 @@ def render_visual_highlights(works):
             with st.container(border=True):
                 safe_image(row["image"], width="stretch")
                 st.write(f"**{row['style']}**")
-                st.caption(row["representative_work"])
-                st.caption(row["why_it_represents_the_trend"])
+                st.caption(row["preview_title"])
+                st.caption(row["preview_caption"])
 
 
 def selected_points(event):
@@ -1947,7 +1949,7 @@ def main():
         selected_period,
         selected_tool,
     )
-    render_visual_highlights(works)
+    render_visual_highlights(explore_previews)
     render_snapshot()
     render_toolchain_snapshot()
     render_evidence_model_snapshot(source_coverage, ecosystem)

@@ -149,7 +149,7 @@ python3 scripts/build_real_data.py \
 - Sidebar filters for style, UTC date, tool, and capability focus
 - Random exploration button for live demos
 - Homepage Visual Trend Playground for style discovery and creative direction starters
-- Visual Highlights preview with representative concept images
+- Visual Highlights preview with fresh homepage images separate from the Representative Works gallery
 - 2024-2026 Current Trend Horizon chart for forward-looking AI visual directions
 - Homepage AI Toolchain Snapshot showing where each tool fits in the production workflow
 - Homepage Evidence Model Snapshot explaining how DiffusionDB limitations are handled
