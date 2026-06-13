@@ -1,5 +1,7 @@
 from pathlib import Path
 from html import escape
+import base64
+import mimetypes
 import os
 import random
 
@@ -33,6 +35,15 @@ THEME = {
 
 
 st.set_page_config(page_title="AI Visual Trend Dashboard", page_icon="AI", layout="wide")
+
+
+def image_data_uri(path):
+    image_path = Path(path)
+    if not image_path.exists():
+        return ""
+    mime_type = mimetypes.guess_type(image_path.name)[0] or "image/png"
+    encoded = base64.b64encode(image_path.read_bytes()).decode("ascii")
+    return f"data:{mime_type};base64,{encoded}"
 
 
 def inject_css():
@@ -302,6 +313,492 @@ def inject_css():
     )
 
 
+def inject_archive_css():
+    archive_background = image_data_uri(ASSET_DIR / "future-visual-archive-hero.png")
+    st.markdown(
+        f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap');
+
+        :root {{
+            --archive-panel: rgba(7, 18, 25, .70);
+            --archive-line: rgba(115, 225, 238, .24);
+            --archive-cyan: #77e6ee;
+            --archive-gold: #e0b778;
+            --archive-text: #f1f7f8;
+            --archive-muted: #9eb0b7;
+        }}
+
+        html, body, [class*="css"] {{
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }}
+
+        .stApp {{
+            background-image:
+                linear-gradient(180deg, rgba(2, 7, 10, .76) 0%, rgba(4, 10, 14, .95) 34%, #05090c 76%),
+                url("{archive_background}");
+            background-size: cover, cover;
+            background-position: center top, center top;
+            background-attachment: fixed, fixed;
+            color: var(--archive-text);
+        }}
+
+        header[data-testid="stHeader"] {{
+            background: rgba(3, 8, 11, .62);
+            border-bottom: 1px solid rgba(115, 225, 238, .10);
+            backdrop-filter: blur(18px);
+        }}
+
+        .main .block-container {{
+            max-width: 1480px;
+            padding: .9rem 2.2rem 4rem;
+        }}
+
+        section[data-testid="stSidebar"] {{
+            background: rgba(3, 11, 15, .90);
+            border-right: 1px solid var(--archive-line);
+            min-width: 17rem;
+            backdrop-filter: blur(26px) saturate(120%);
+            box-shadow: 18px 0 60px rgba(0, 0, 0, .28);
+        }}
+
+        section[data-testid="stSidebar"] h1,
+        section[data-testid="stSidebar"] h2,
+        section[data-testid="stSidebar"] h3 {{
+            font-family: "Orbitron", "Inter", sans-serif;
+            color: #dcfbff;
+            font-weight: 600;
+            letter-spacing: 0;
+        }}
+
+        section[data-testid="stSidebar"] [data-baseweb="select"] > div,
+        section[data-testid="stSidebar"] [data-testid="stMultiSelect"] > div {{
+            background: rgba(6, 19, 26, .72);
+            border-color: rgba(115, 225, 238, .24);
+            border-radius: 3px;
+        }}
+
+        div[role="radiogroup"] {{
+            position: sticky;
+            top: 3.55rem;
+            z-index: 20;
+            display: flex;
+            flex-wrap: nowrap !important;
+            gap: .25rem;
+            width: 100%;
+            padding: .38rem .5rem;
+            margin: 0 0 .8rem;
+            background: rgba(3, 10, 14, .84);
+            border: 1px solid rgba(115, 225, 238, .16);
+            border-radius: 3px;
+            backdrop-filter: blur(22px);
+            box-shadow: 0 18px 45px rgba(0,0,0,.24);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }}
+
+        div[role="radiogroup"]::-webkit-scrollbar {{
+            display: none;
+        }}
+
+        div[role="radiogroup"] label {{
+            min-width: max-content;
+            padding: .4rem .48rem;
+            border-bottom: 1px solid transparent;
+        }}
+
+        div[role="radiogroup"] label > div:first-child,
+        div[role="radiogroup"] label > input {{
+            display: none !important;
+        }}
+
+        div[role="radiogroup"] label:has(input:checked) {{
+            color: var(--archive-cyan);
+            border-bottom-color: var(--archive-cyan);
+            background: rgba(115, 225, 238, .06);
+        }}
+
+        div[role="radiogroup"] label p {{
+            font-size: .68rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: inherit;
+        }}
+
+        .hero-panel {{
+            min-height: 650px;
+            padding: clamp(2rem, 5vw, 5.1rem);
+            border-radius: 2px;
+            border: 1px solid rgba(115, 225, 238, .22);
+            background-image:
+                linear-gradient(90deg, rgba(2, 7, 10, .98) 0%, rgba(2, 8, 11, .86) 31%, rgba(2, 8, 11, .22) 67%, rgba(2, 8, 11, .14) 100%),
+                linear-gradient(180deg, rgba(0,0,0,.08), rgba(1,6,9,.28)),
+                url("{archive_background}");
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            margin: .2rem 0 0;
+            box-shadow: 0 35px 90px rgba(0,0,0,.46);
+            isolation: isolate;
+        }}
+
+        .hero-panel:after {{
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(180deg, rgba(130,235,244,.025) 0 1px, transparent 1px 6px);
+            mix-blend-mode: screen;
+            opacity: .45;
+            z-index: -1;
+        }}
+
+        .hero-kicker {{
+            color: var(--archive-cyan);
+            font-size: .78rem;
+            font-weight: 600;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }}
+
+        .hero-title {{
+            color: #f3fbfc;
+            font-family: "Orbitron", "Inter", sans-serif;
+            font-size: clamp(2.8rem, 5.8vw, 5.8rem);
+            line-height: 1.02;
+            margin: 0;
+            max-width: 760px;
+            font-weight: 500;
+            letter-spacing: 0;
+            text-shadow: 0 0 34px rgba(119, 230, 238, .12);
+        }}
+
+        .hero-copy {{
+            max-width: 610px;
+            color: #c4d3d8;
+            margin-top: 1.25rem;
+            font-size: 1rem;
+            line-height: 1.72;
+        }}
+
+        .hero-pill-row {{
+            margin-top: 1.35rem;
+        }}
+
+        .hero-pill {{
+            padding: .42rem .62rem;
+            border-radius: 2px;
+            margin: .18rem .3rem .18rem 0;
+            background: rgba(7, 25, 32, .52);
+            border: 1px solid rgba(115, 225, 238, .22);
+            color: #dffbff;
+            font-size: .78rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }}
+
+        .archive-status {{
+            position: absolute;
+            right: 2rem;
+            top: 2rem;
+            width: 215px;
+            padding: 1rem;
+            background: rgba(3, 13, 18, .68);
+            border: 1px solid rgba(115, 225, 238, .42);
+            backdrop-filter: blur(16px);
+            color: #cdebef;
+        }}
+
+        .archive-status-label {{
+            color: var(--archive-cyan);
+            font-size: .68rem;
+            text-transform: uppercase;
+            font-weight: 700;
+        }}
+
+        .archive-status-value {{
+            margin: .35rem 0 .15rem;
+            font-family: "Orbitron", "Inter", sans-serif;
+            font-size: 1.15rem;
+            color: #fff;
+        }}
+
+        .archive-metric-ribbon {{
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin: -7rem 2.2rem 2.2rem;
+            position: relative;
+            z-index: 4;
+            background: rgba(3, 12, 17, .78);
+            border: 1px solid rgba(115, 225, 238, .28);
+            backdrop-filter: blur(24px) saturate(120%);
+            box-shadow: 0 24px 55px rgba(0,0,0,.32);
+        }}
+
+        .archive-metric {{
+            min-height: 118px;
+            padding: 1.1rem 1.3rem;
+            border-right: 1px solid rgba(115, 225, 238, .18);
+        }}
+
+        .archive-metric:last-child {{
+            border-right: 0;
+        }}
+
+        .archive-metric-label {{
+            color: var(--archive-muted);
+            font-size: .72rem;
+            font-weight: 600;
+        }}
+
+        .archive-metric-value {{
+            margin: .35rem 0 .2rem;
+            color: #f4fbfc;
+            font-family: "Orbitron", "Inter", sans-serif;
+            font-size: clamp(1.15rem, 2vw, 1.75rem);
+            line-height: 1.15;
+        }}
+
+        .archive-metric-delta {{
+            color: #8ae39b;
+            font-size: .72rem;
+        }}
+
+        .insight-strip {{
+            background: rgba(5, 19, 25, .74);
+            border: 1px solid rgba(115, 225, 238, .20);
+            border-left: 2px solid var(--archive-cyan);
+            border-radius: 2px;
+            padding: .95rem 1.05rem;
+            margin: .3rem 0 1.2rem;
+            color: #dceff1;
+            backdrop-filter: blur(14px);
+        }}
+
+        .section-header-line {{
+            gap: .8rem;
+            margin: 2.8rem 0 1rem;
+        }}
+
+        .section-header-line:before {{
+            width: 2.2rem;
+            height: 1px;
+            border-radius: 0;
+            background: var(--archive-cyan);
+            box-shadow: 0 0 14px rgba(119,230,238,.42);
+        }}
+
+        .section-header-line h3 {{
+            color: #e9f5f7;
+            font-family: "Orbitron", "Inter", sans-serif;
+            font-size: 1.18rem;
+            font-weight: 500;
+            letter-spacing: 0;
+        }}
+
+        .stButton > button {{
+            border-radius: 2px;
+            border: 1px solid rgba(115,225,238,.35);
+            background: rgba(8, 28, 35, .70);
+            color: #f2fbff;
+            font-weight: 650;
+            box-shadow: inset 0 1px rgba(255,255,255,.03);
+        }}
+
+        .stButton > button:hover {{
+            border-color: rgba(115,225,238,.70);
+            background: rgba(11, 43, 53, .80);
+        }}
+
+        div[data-testid="stMetric"],
+        .story-card, .source-card, .prompt-card,
+        .work-card {{
+            background: var(--archive-panel);
+            border-color: var(--archive-line);
+            border-radius: 3px;
+            backdrop-filter: blur(18px);
+            box-shadow: 0 20px 48px rgba(0,0,0,.22);
+        }}
+
+        div[data-testid="stMetricValue"] {{
+            font-family: "Orbitron", "Inter", sans-serif;
+            font-weight: 500;
+            font-size: clamp(1.35rem, 2vw, 1.8rem);
+            line-height: 1.18;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+            overflow-wrap: anywhere;
+        }}
+
+        div[data-testid="stMetricValue"] > div {{
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+        }}
+
+        div[data-testid="stImage"] img {{
+            border-radius: 2px;
+            border: 1px solid rgba(115,225,238,.14);
+            box-shadow: 0 18px 45px rgba(0,0,0,.26);
+        }}
+
+        .tag {{
+            border-radius: 2px;
+            background: rgba(115, 225, 238, .08);
+            border-color: rgba(115, 225, 238, .22);
+        }}
+
+        .copy-box {{
+            border-radius: 2px;
+        }}
+
+        div[data-testid="stVerticalBlockBorderWrapper"] {{
+            background: rgba(4, 15, 21, .60);
+            border-color: rgba(115, 225, 238, .18) !important;
+            border-radius: 3px !important;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 18px 45px rgba(0,0,0,.20);
+        }}
+
+        div[data-testid="stExpander"] {{
+            background: rgba(4, 15, 21, .66);
+            border-color: rgba(115, 225, 238, .18);
+            border-radius: 3px;
+        }}
+
+        div[data-testid="stDataFrame"],
+        div[data-testid="stPlotlyChart"] {{
+            background: rgba(3, 12, 17, .56);
+            border: 1px solid rgba(115, 225, 238, .12);
+            border-radius: 3px;
+            overflow: hidden;
+            backdrop-filter: blur(14px);
+        }}
+
+        .archive-timeline {{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+            margin: .8rem 0 1.2rem;
+            border-top: 1px solid rgba(115,225,238,.42);
+        }}
+
+        .archive-timeline-item {{
+            padding: 1rem 1.2rem;
+            border-right: 1px solid rgba(115,225,238,.16);
+            background: rgba(4, 16, 22, .54);
+        }}
+
+        .archive-timeline-item:last-child {{
+            border-right: 0;
+        }}
+
+        .archive-year {{
+            font-family: "Orbitron", "Inter", sans-serif;
+            color: var(--archive-cyan);
+            font-size: .92rem;
+        }}
+
+        .archive-theme {{
+            margin-top: .35rem;
+            color: #f2f8f9;
+            font-size: 1rem;
+            font-weight: 600;
+        }}
+
+        .archive-score {{
+            color: var(--archive-muted);
+            font-size: .78rem;
+        }}
+
+        @media (max-width: 900px) {{
+            .main .block-container {{
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }}
+
+            .hero-panel {{
+                min-height: 590px;
+                padding: 4.5rem 1.4rem 1.4rem;
+                justify-content: flex-start;
+                background-position: 58% center;
+            }}
+
+            .hero-title {{
+                font-size: clamp(2.25rem, 10vw, 3.35rem);
+                max-width: 520px;
+            }}
+
+            .hero-copy {{
+                max-width: 90%;
+                font-size: .94rem;
+            }}
+
+            .archive-status {{
+                position: static;
+                width: min(100%, 250px);
+                margin: 1.2rem 0 0;
+            }}
+
+            .archive-metric-ribbon {{
+                grid-template-columns: repeat(2, 1fr);
+                margin: -4rem .75rem 1.4rem;
+            }}
+
+            .archive-metric:nth-child(2) {{
+                border-right: 0;
+            }}
+
+            .archive-metric:nth-child(-n+2) {{
+                border-bottom: 1px solid rgba(115,225,238,.18);
+            }}
+
+            .archive-timeline {{
+                grid-template-columns: 1fr;
+            }}
+
+            .archive-timeline-item {{
+                border-right: 0;
+                border-bottom: 1px solid rgba(115,225,238,.14);
+            }}
+
+            section[data-testid="stSidebar"] {{
+                min-width: auto;
+            }}
+        }}
+
+        @media (max-width: 560px) {{
+            .hero-panel {{
+                min-height: 660px;
+                background-position: 65% center;
+            }}
+
+            .archive-metric-ribbon {{
+                grid-template-columns: 1fr;
+                margin-top: -3rem;
+            }}
+
+            .archive-metric {{
+                border-right: 0;
+                border-bottom: 1px solid rgba(115,225,238,.16);
+            }}
+
+            div[role="radiogroup"] {{
+                top: 3.2rem;
+            }}
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def show_section(title):
     st.markdown(
         f"""
@@ -456,13 +953,20 @@ def load_data():
 def plot_layout(fig, height=430):
     fig.update_layout(
         template="plotly_dark",
-        paper_bgcolor=BG_COLOR,
-        plot_bgcolor=BG_COLOR,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(2,10,14,.32)",
         font={"color": THEME["text"]},
         height=height,
         margin={"l": 10, "r": 10, "t": 50, "b": 20},
         legend_title_text="",
+        hoverlabel={
+            "bgcolor": "#07141a",
+            "bordercolor": "#77e6ee",
+            "font": {"color": "#f1f7f8"},
+        },
     )
+    fig.update_xaxes(gridcolor="rgba(119,230,238,.09)", zerolinecolor="rgba(119,230,238,.12)")
+    fig.update_yaxes(gridcolor="rgba(119,230,238,.09)", zerolinecolor="rgba(119,230,238,.12)")
     return fig
 
 
@@ -569,10 +1073,10 @@ def render_hero(prompts, latest_df, summary):
         )
 
     st.markdown(
-        """
+        f"""
         <div class="hero-panel">
-            <div class="hero-kicker">AI Visual Culture Research Dashboard</div>
-            <h1 class="hero-title">AI Visual Trend Dashboard</h1>
+            <div class="hero-kicker">Future visual-culture archive / research interface</div>
+            <h1 class="hero-title">AI Visual<br>Trend Dashboard</h1>
             <p class="hero-copy">
                 Explore the visual language of generative AI: from real prompt signals to cinematic style previews,
                 tool workflows, creative direction starters, and 2024-2026 trend outlooks.
@@ -583,16 +1087,44 @@ def render_hero(prompts, latest_df, summary):
                 <span class="hero-pill">Creative direction generator</span>
                 <span class="hero-pill">Visual evidence gallery</span>
             </div>
+            <div class="archive-status">
+                <div class="archive-status-label">Archive signal / active</div>
+                <div class="archive-status-value">{escape(str(top_style["style"]))}</div>
+                <div class="small-note">{float(top_style["popularity"]):.1f} evidence index</div>
+                <div class="small-note">Historical baseline + current horizon</div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    metric_1, metric_2, metric_3, metric_4 = st.columns(4)
-    metric_1.metric("Top Tracked Style", str(top_style["style"]), f'{float(top_style["popularity"]):.1f} index')
-    metric_2.metric("Fastest Daily Growth", str(fastest_style.name), f'{int(fastest_style["growth"]):+,}')
-    metric_3.metric("Safe Prompts Analyzed", f"{safe_records:,}", "real DiffusionDB records")
-    metric_4.metric("Tracked Style Matches", f"{classified_records:,}", f"{prompts['style'].nunique()} documented rules")
+    st.markdown(
+        f"""
+        <div class="archive-metric-ribbon">
+            <div class="archive-metric">
+                <div class="archive-metric-label">Top Tracked Style</div>
+                <div class="archive-metric-value">{escape(str(top_style["style"]))}</div>
+                <div class="archive-metric-delta">+ {float(top_style["popularity"]):.1f} evidence index</div>
+            </div>
+            <div class="archive-metric">
+                <div class="archive-metric-label">Fastest Daily Growth</div>
+                <div class="archive-metric-value">{escape(str(fastest_style.name))}</div>
+                <div class="archive-metric-delta">{int(fastest_style["growth"]):+,} matched prompts</div>
+            </div>
+            <div class="archive-metric">
+                <div class="archive-metric-label">Safe Prompts Analyzed</div>
+                <div class="archive-metric-value">{safe_records:,}</div>
+                <div class="archive-metric-delta">Real DiffusionDB records</div>
+            </div>
+            <div class="archive-metric">
+                <div class="archive-metric-label">Tracked Style Matches</div>
+                <div class="archive-metric-value">{classified_records:,}</div>
+                <div class="archive-metric-delta">{prompts['style'].nunique()} documented rules</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown(
         f"""
@@ -773,6 +1305,27 @@ def render_current_trend_horizon(horizon):
     st.caption(
         "This is a forward-looking signal layer, not DiffusionDB prompt volume. It uses current ecosystem evidence, "
         "official tool capability references, dataset discovery, and benchmark planning to show where AI visual culture is moving."
+    )
+
+    yearly_leaders = (
+        horizon.sort_values(["horizon_year", "signal_score"], ascending=[True, False])
+        .groupby("horizon_year", as_index=False)
+        .first()
+    )
+    timeline_items = "".join(
+        (
+            '<div class="archive-timeline-item">'
+            f'<div class="archive-year">{int(row["horizon_year"])}</div>'
+            f'<div class="archive-theme">{escape(str(row["trend_theme"]))}</div>'
+            f'<div class="archive-score">{int(row["signal_score"])} signal / '
+            f'{escape(str(row["confidence_label"]))}</div>'
+            "</div>"
+        )
+        for _, row in yearly_leaders.iterrows()
+    )
+    st.markdown(
+        f'<div class="archive-timeline">{timeline_items}</div>',
+        unsafe_allow_html=True,
     )
 
     latest_year = int(horizon["horizon_year"].max())
@@ -1899,6 +2452,7 @@ def render_data_notes(prompts, summary):
 
 def main():
     inject_css()
+    inject_archive_css()
     with st.spinner("Loading trends..."):
         (
             prompts,
@@ -1937,29 +2491,8 @@ def main():
     if filtered_latest.empty:
         filtered_latest = style_period[style_period["period"] == selected_date]
 
-    render_hero(prompts, filtered_latest, summary)
-    render_current_trend_horizon(horizon)
-    render_visual_trend_playground(
-        prompts,
-        style_period,
-        works,
-        explore_previews,
-        selected_styles,
-        selected_period,
-        selected_tool,
-    )
-    render_visual_highlights(visual_highlights)
-    render_snapshot()
-    render_toolchain_snapshot()
-    render_evidence_model_snapshot(source_coverage, ecosystem)
-
-    if len(selected_styles) == 1:
-        st.success(
-            f"Random exploration insight: {selected_styles[0]} on the {selected_period} historical baseline can be inspected alongside "
-            f"{selected_tool}. Use the 2024-2026 horizon for current outlook and the gallery for visual evidence."
-        )
-
     pages = [
+        "Overview",
         "Trend Analytics",
         "Representative Works",
         "Tool Benchmarks",
@@ -1969,17 +2502,39 @@ def main():
         "Real References",
     ]
     if "active_page" not in st.session_state:
-        st.session_state.active_page = pages[0]
+        st.session_state.active_page = "Overview"
 
     active_page = st.radio(
-        "Dashboard page",
+        "Archive navigation",
         pages,
         key="active_page",
         horizontal=True,
         label_visibility="collapsed",
     )
 
-    if active_page == "Trend Analytics":
+    if active_page == "Overview":
+        render_hero(prompts, filtered_latest, summary)
+        render_current_trend_horizon(horizon)
+        render_visual_trend_playground(
+            prompts,
+            style_period,
+            works,
+            explore_previews,
+            selected_styles,
+            selected_period,
+            selected_tool,
+        )
+        render_visual_highlights(visual_highlights)
+        render_snapshot()
+        render_toolchain_snapshot()
+        render_evidence_model_snapshot(source_coverage, ecosystem)
+
+        if len(selected_styles) == 1:
+            st.success(
+                f"Random exploration insight: {selected_styles[0]} on the {selected_period} historical baseline can be inspected alongside "
+                f"{selected_tool}. Use the 2024-2026 horizon for current outlook and the gallery for visual evidence."
+            )
+    elif active_page == "Trend Analytics":
         with st.spinner("Rendering trend analytics..."):
             tab_trends(prompts, style_period, samplers, aspect_ratios, works, selected_styles, selected_period)
             render_trend_confidence(prompts, ecosystem, selected_styles)
